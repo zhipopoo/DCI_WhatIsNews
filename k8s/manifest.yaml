@@ -77,6 +77,8 @@ spec:
       labels:
         app: postgres
     spec:
+      imagePullSecrets:
+        - name: default-secret
       containers:
         - name: postgres
           image: postgres:16-alpine
@@ -248,6 +250,8 @@ spec:
       labels:
         app: news-backend
     spec:
+      imagePullSecrets:
+        - name: default-secret
       containers:
         - name: backend
           image: swr.cn-hongkong-6001.sgcis.hksarg/andy_opr_test/news_backend:v1.1
@@ -381,6 +385,8 @@ spec:
       labels:
         app: news-frontend
     spec:
+      imagePullSecrets:
+        - name: default-secret
       containers:
         - name: frontend
           image: swr.cn-hongkong-6001.sgcis.hksarg/andy_opr_test/news_frontend:v1.1
