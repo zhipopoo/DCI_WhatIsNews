@@ -1,0 +1,440 @@
+# ============================================================
+# WhatIsNews — K8s All-in-One Manifest
+# Namespace: dci-news
+# Images:   Frontend v1.1 / Backend v1.1 / PostgreSQL 16
+# Storage:  Huawei Cloud EVS encrypted disk (CSI)
+# ============================================================
+# Deploy:   kubectl apply -f k8s/manifest.yaml
+# ============================================================
+
+# ==================== Namespace ====================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dci-news
+  labels:
+    app: whatisnews
+
+---
+# ==================== Secret ====================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dci-news-secret
+  namespace: dci-news
+  labels:
+    app: whatisnews
+type: Opaque
+stringData:
+  POSTGRES_DB: "whatisnews"
+  POSTGRES_USER: "whatisnews"
+  POSTGRES_PASSWORD: "whatisnews123"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-svc.dci-news.svc.cluster.local:5432/whatisnews"
+  SPRING_DATASOURCE_USERNAME: "whatisnews"
+  SPRING_DATASOURCE_PASSWORD: "whatisnews123"
+  JWT_SECRET: "WhatIsNews-JWT-Secret-Key-2024-Production"
+  JWT_EXPIRATION: "86400000"
+  ADMIN_DEFAULT_USERNAME: "admin"
+  ADMIN_DEFAULT_PASSWORD: "admin123"
+  FILE_UPLOAD_DIR: "/app/uploads"
+
+---
+# ==================== PostgreSQL — Service ====================
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+  namespace: dci-news
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: postgres
+  selector:
+    app: postgres
+
+---
+# ==================== PostgreSQL — StatefulSet ====================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: dci-news
+  labels:
+    app: postgres
+spec:
+  serviceName: postgres-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+              name: postgres
+          envFrom:
+            - secretRef:
+                name: dci-news-secret
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - whatisnews
+                - -d
+                - whatisnews
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - whatisnews
+                - -d
+                - whatisnews
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+        labels:
+          app: postgres
+        annotations:
+          # Huawei Cloud CSI encrypted disk
+          everest.io/disk-volume-type: SSD
+          everest.io/crypt-key-id: "2deb7b74-8f28-4252-be79-bf5b098b9a7f" # 留空使用默认CMK；如需指定：填KMS key ID
+          everest.io/csi.data-encryption-algorithm: AES_256
+        labels:
+          failure-domain.beta.kubernetes.io/region: cn-hongkong-6001
+          failure-domain.beta.kubernetes.io/zone: cn-hongkong-6001a
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: csi-disk            # 华为云CSI磁盘
+        resources:
+          requests:
+            storage: 20Gi
+
+---
+# ==================== Backend — ConfigMap ====================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: dci-news
+  labels:
+    app: news-backend
+data:
+  application.yml: |
+    server:
+      port: 8080
+
+    spring:
+      application:
+        name: whatisnews-backend
+      datasource:
+        url: ${SPRING_DATASOURCE_URL}
+        username: ${SPRING_DATASOURCE_USERNAME}
+        password: ${SPRING_DATASOURCE_PASSWORD}
+        driver-class-name: org.postgresql.Driver
+        hikari:
+          maximum-pool-size: 20
+          minimum-idle: 5
+          idle-timeout: 300000
+          connection-timeout: 20000
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        show-sql: false
+        open-in-view: false
+        properties:
+          hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
+      flyway:
+        enabled: true
+        locations: classpath:db/migration
+        baseline-on-migrate: true
+        repair-on-migrate: true
+      servlet:
+        multipart:
+          max-file-size: 20MB
+          max-request-size: 20MB
+      jackson:
+        date-format: yyyy-MM-dd HH:mm:ss
+        time-zone: Asia/Shanghai
+        default-property-inclusion: non_null
+
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration: ${JWT_EXPIRATION}
+
+    file:
+      upload-dir: ${FILE_UPLOAD_DIR:/app/uploads}
+
+    admin:
+      default-username: ${ADMIN_DEFAULT_USERNAME}
+      default-password: ${ADMIN_DEFAULT_PASSWORD}
+
+    logging:
+      level:
+        root: INFO
+        com.whatisnews: DEBUG
+        org.springframework.security: INFO
+
+---
+# ==================== Backend — PVC (uploads) ====================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-uploads-pvc
+  namespace: dci-news
+  labels:
+    app: news-backend
+  annotations:
+    everest.io/disk-volume-type: SSD
+    everest.io/crypt-key-id: "2deb7b74-8f28-4252-be79-bf5b098b9a7f"
+    everest.io/csi.data-encryption-algorithm: AES_256
+  labels:
+    failure-domain.beta.kubernetes.io/region: cn-hongkong-6001
+    failure-domain.beta.kubernetes.io/zone: cn-hongkong-6001a
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: csi-disk
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# ==================== Backend — Deployment ====================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: news-backend
+  namespace: dci-news
+  labels:
+    app: news-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: news-backend
+  template:
+    metadata:
+      labels:
+        app: news-backend
+    spec:
+      containers:
+        - name: backend
+          image: swr.cn-hongkong-6001.sgcis.hksarg/andy_opr_test/news_backend:v1.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: dci-news-secret
+          env:
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx1536m"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+          livenessProbe:
+            httpGet:
+              path: /api/news/featured/top?limit=1
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /api/news/featured/top?limit=1
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+            - name: uploads
+              mountPath: /app/uploads
+      volumes:
+        - name: config
+          configMap:
+            name: backend-config
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: backend-uploads-pvc
+
+---
+# ==================== Backend — Service ====================
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+  namespace: dci-news
+  labels:
+    app: news-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: news-backend
+
+---
+# ==================== Frontend — Nginx ConfigMap ====================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: dci-news
+  labels:
+    app: news-frontend
+data:
+  default.conf: |
+    server {
+        listen       80;
+        server_name  localhost;
+
+        gzip on;
+        gzip_vary on;
+        gzip_min_length 1024;
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript image/svg+xml;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+            try_files $uri $uri/ /index.html;
+        }
+
+        location /api/ {
+            proxy_pass http://backend-svc.dci-news.svc.cluster.local:8080/api/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            proxy_connect_timeout 60s;
+            proxy_read_timeout 60s;
+            proxy_next_upstream error timeout invalid_header http_502 http_503;
+
+            client_max_body_size 20m;
+        }
+
+        location /uploads/ {
+            proxy_pass http://backend-svc.dci-news.svc.cluster.local:8080/uploads/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    }
+
+---
+# ==================== Frontend — Deployment ====================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: news-frontend
+  namespace: dci-news
+  labels:
+    app: news-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: news-frontend
+  template:
+    metadata:
+      labels:
+        app: news-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: swr.cn-hongkong-6001.sgcis.hksarg/andy_opr_test/news_frontend:v1.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+
+---
+# ==================== Frontend — Service ====================
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+  namespace: dci-news
+  labels:
+    app: news-frontend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: news-frontend
