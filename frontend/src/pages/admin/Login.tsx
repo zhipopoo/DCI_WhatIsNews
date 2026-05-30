@@ -11,7 +11,6 @@ export default function AdminLogin() {
   const { setAuth, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
-  // If already authenticated, redirect to dashboard
   if (isAuthenticated) {
     navigate('/admin', { replace: true });
     return null;
@@ -41,25 +40,32 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">WN</span>
+          <Link to="/" className="inline-flex items-center gap-2.5">
+            <div className="w-10 h-10 bg-primary-600 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-lg">DCI</span>
             </div>
-            <span className="text-2xl font-bold">WhatIsNews</span>
+            <span className="text-2xl font-bold text-gray-900">
+              WhatIs<span className="text-primary-600">News</span>
+            </span>
           </Link>
-          <p className="text-gray-500 mt-2">Admin Panel Login</p>
+          <p className="text-gray-500 mt-2 text-sm">Admin Console</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-          <h1 className="text-xl font-bold text-center">Sign In</h1>
+        <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-100 shadow-sm p-8 space-y-5">
+          <h1 className="text-xl font-bold text-center text-gray-900">Sign In</h1>
 
-          {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">{error}</div>}
+          {error && (
+            <div className="bg-red-50 text-red-600 text-sm p-3 rounded border border-red-100 flex items-center gap-2">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              {error}
+            </div>
+          )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Username</label>
             <input
               type="text"
               value={username}
@@ -71,7 +77,7 @@ export default function AdminLogin() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
             <input
               type="password"
               value={password}
@@ -81,13 +87,13 @@ export default function AdminLogin() {
             />
           </div>
 
-          <button type="submit" disabled={loading} className="btn-primary w-full py-2.5">
+          <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-2.5 rounded hover:bg-primary-700 transition-colors font-medium text-sm disabled:opacity-50">
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         <p className="text-center text-xs text-gray-400 mt-4">
-          Default: admin / admin123
+          Default credentials: admin / admin123
         </p>
       </div>
     </div>
