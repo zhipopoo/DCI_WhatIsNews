@@ -1,0 +1,47 @@
+# WhatIsNews Backend Helm Values
+
+namespace: dci-news
+
+image:
+  repository: swr.cn-hongkong-6001.sgcis.hksarg/andy_opr_test/news_backend
+  tag: latest
+  pullPolicy: Always
+
+replicas: 2
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+# Health probes
+livenessProbe:
+  httpGet:
+    path: /actuator/health
+    port: 8080
+  initialDelaySeconds: 90
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 5
+
+readinessProbe:
+  httpGet:
+    path: /api/news/featured/top?limit=1
+    port: 8080
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 5
+
+# Java options
+javaOpts: "-Xms256m -Xmx1536m"
+
+# File upload volume
+uploadVolume:
+  size: 5Gi

@@ -1,0 +1,22 @@
+# WhatIsNews Frontend Helm Values
+
+namespace: dci-news
+
+image:
+  repository: swr.cn-hongkong-6001.sgcis.hksarg/andy_opr_test/news_frontend
+  tag: latest
+  pullPolicy: Always
+
+replicas: 2
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

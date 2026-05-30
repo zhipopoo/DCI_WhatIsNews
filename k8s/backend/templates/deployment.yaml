@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: news-backend
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: news-backend
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: news-backend
+  template:
+    metadata:
+      labels:
+        app: news-backend
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: dci-news-secret
+          env:
+            - name: JAVA_OPTS
+              value: "{{ .Values.javaOpts }}"
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+          livenessProbe:
+            httpGet:
+              path: /api/news/featured/top?limit=1
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /api/news/featured/top?limit=1
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+            - name: uploads
+              mountPath: /app/uploads
+      volumes:
+        - name: config
+          configMap:
+            name: backend-config
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: backend-uploads-pvc
