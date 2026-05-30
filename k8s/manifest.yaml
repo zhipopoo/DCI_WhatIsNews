@@ -17,28 +17,28 @@
 
 # ---
 # ==================== Secret ====================
-apiVersion: v1
-kind: Secret
-metadata:
-  name: dci-news-secret
-  namespace: dci-news
-  labels:
-    app: whatisnews
-type: Opaque
-stringData:
-  POSTGRES_DB: "whatisnews"
-  POSTGRES_USER: "whatisnews"
-  POSTGRES_PASSWORD: "whatisnews123"
-  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-svc.dci-news.svc.cluster.local:5432/whatisnews"
-  SPRING_DATASOURCE_USERNAME: "whatisnews"
-  SPRING_DATASOURCE_PASSWORD: "whatisnews123"
-  JWT_SECRET: "WhatIsNews-JWT-Secret-Key-2024-Production"
-  JWT_EXPIRATION: "86400000"
-  ADMIN_DEFAULT_USERNAME: "admin"
-  ADMIN_DEFAULT_PASSWORD: "admin123"
-  FILE_UPLOAD_DIR: "/app/uploads"
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: dci-news-secret
+#   namespace: dci-news
+#   labels:
+#     app: whatisnews
+# type: Opaque
+# stringData:
+#   POSTGRES_DB: "whatisnews"
+#   POSTGRES_USER: "whatisnews"
+#   POSTGRES_PASSWORD: "whatisnews123"
+#   SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-svc.dci-news.svc.cluster.local:5432/whatisnews"
+#   SPRING_DATASOURCE_USERNAME: "whatisnews"
+#   SPRING_DATASOURCE_PASSWORD: "whatisnews123"
+#   JWT_SECRET: "WhatIsNews-JWT-Secret-Key-2024-Production"
+#   JWT_EXPIRATION: "86400000"
+#   ADMIN_DEFAULT_USERNAME: "admin"
+#   ADMIN_DEFAULT_PASSWORD: "admin123"
+#   FILE_UPLOAD_DIR: "/app/uploads"
 
----
+# ---
 # ==================== PostgreSQL — Service ====================
 apiVersion: v1
 kind: Service
@@ -126,18 +126,16 @@ spec:
         name: postgres-data
         labels:
           app: postgres
-        annotations:
-          # Huawei Cloud CSI encrypted disk
-          everest.io/disk-volume-type: SSD
-          everest.io/crypt-key-id: "2deb7b74-8f28-4252-be79-bf5b098b9a7f" # 留空使用默认CMK；如需指定：填KMS key ID
-          everest.io/csi.data-encryption-algorithm: AES_256
-        labels:
           failure-domain.beta.kubernetes.io/region: cn-hongkong-6001
           failure-domain.beta.kubernetes.io/zone: cn-hongkong-6001a
+        annotations:
+          everest.io/disk-volume-type: SSD
+          everest.io/crypt-key-id: "2deb7b74-8f28-4252-be79-bf5b098b9a7f"
+          everest.io/csi.data-encryption-algorithm: AES_256
       spec:
         accessModes:
           - ReadWriteOnce
-        storageClassName: csi-disk            # 华为云CSI磁盘
+        storageClassName: csi-disk
         resources:
           requests:
             storage: 20Gi
@@ -210,29 +208,28 @@ data:
 
 ---
 # ==================== Backend — PVC (uploads) ====================
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: backend-uploads-pvc
-  namespace: dci-news
-  labels:
-    app: news-backend
-  annotations:
-    everest.io/disk-volume-type: SSD
-    everest.io/crypt-key-id: "2deb7b74-8f28-4252-be79-bf5b098b9a7f"
-    everest.io/csi.data-encryption-algorithm: AES_256
-  labels:
-    failure-domain.beta.kubernetes.io/region: cn-hongkong-6001
-    failure-domain.beta.kubernetes.io/zone: cn-hongkong-6001a
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: csi-disk
-  resources:
-    requests:
-      storage: 5Gi
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: backend-uploads-pvc
+#   namespace: dci-news
+#   labels:
+#     app: news-backend
+#     failure-domain.beta.kubernetes.io/region: cn-hongkong-6001
+#     failure-domain.beta.kubernetes.io/zone: cn-hongkong-6001a
+#   annotations:
+#     everest.io/disk-volume-type: SSD
+#     everest.io/crypt-key-id: "2deb7b74-8f28-4252-be79-bf5b098b9a7f"
+#     everest.io/csi.data-encryption-algorithm: AES_256
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   storageClassName: csi-disk
+#   resources:
+#     requests:
+#       storage: 5Gi
 
----
+# ---
 # ==================== Backend — Deployment ====================
 apiVersion: apps/v1
 kind: Deployment
