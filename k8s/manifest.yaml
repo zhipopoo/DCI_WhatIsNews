@@ -8,14 +8,14 @@
 # ============================================================
 
 # ==================== Namespace ====================
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: dci-news
-  labels:
-    app: whatisnews
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: dci-news
+#   labels:
+#     app: whatisnews
 
----
+# ---
 # ==================== Secret ====================
 apiVersion: v1
 kind: Secret
