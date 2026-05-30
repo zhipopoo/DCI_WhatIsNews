@@ -132,7 +132,7 @@ spec:
           failure-domain.beta.kubernetes.io/zone: cn-hongkong-6001a
         annotations:
           everest.io/disk-volume-type: SSD
-          everest.io/crypt-key-id: "2deb7b74-8f28-4252-be79-bf5b098b9a7f"
+          everest.io/crypt-key-id: "07dc4a2e-a2ea-44a1-9f19-e2facaf75ae8"
           everest.io/csi.data-encryption-algorithm: AES_256
       spec:
         accessModes:
@@ -221,7 +221,7 @@ data:
 #     failure-domain.beta.kubernetes.io/zone: cn-hongkong-6001a
 #   annotations:
 #     everest.io/disk-volume-type: SSD
-#     everest.io/crypt-key-id: "2deb7b74-8f28-4252-be79-bf5b098b9a7f"
+#     everest.io/crypt-key-id: "07dc4a2e-a2ea-44a1-9f19-e2facaf75ae8"
 #     everest.io/csi.data-encryption-algorithm: AES_256
 # spec:
 #   accessModes:
