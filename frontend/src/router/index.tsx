@@ -11,6 +11,7 @@ import AdminNewsManage from '@/pages/admin/NewsManage';
 import AdminNewsEdit from '@/pages/admin/NewsEdit';
 import AdminCategoryManage from '@/pages/admin/CategoryManage';
 import AdminMediaManage from '@/pages/admin/MediaManage';
+import AdminUserManage from '@/pages/admin/UserManage';
 
 const router = createBrowserRouter([
   // Frontend routes
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
       { path: 'news/:id/edit', element: <AdminNewsEdit /> },
       { path: 'categories', element: <AdminCategoryManage /> },
       { path: 'media', element: <AdminMediaManage /> },
+      { path: 'users', element: <AdminUserManage /> },
     ],
   },
   // Catch-all

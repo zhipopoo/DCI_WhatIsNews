@@ -91,6 +91,32 @@ export interface LoginResponse {
   displayName: string;
 }
 
+// ==================== Admin User ====================
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  displayName: string;
+  email?: string;
+  isActive: boolean;
+  lastLoginAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateUserRequest {
+  username: string;
+  password?: string;
+  displayName?: string;
+  email?: string;
+  isActive?: boolean;
+}
+
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
 // ==================== Media ====================
 
 export interface MediaFile {
