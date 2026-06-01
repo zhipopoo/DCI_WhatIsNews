@@ -69,4 +69,8 @@ public interface NewsRepository extends JpaRepository<News, Long>, JpaSpecificat
     @Modifying
     @Query("UPDATE News n SET n.viewCount = n.viewCount + 1 WHERE n.id = :id")
     void incrementViewCount(@Param("id") Long id);
+
+    /** Count active (non-deleted) articles that reference a file path, excluding a given article */
+    @Query("SELECT COUNT(n) FROM News n WHERE n.isDeleted = false AND n.id != :excludeId AND n.content LIKE CONCAT('%', :filePath, '%')")
+    long countByContentContainingAndIdNot(@Param("filePath") String filePath, @Param("excludeId") Long excludeId);
 }

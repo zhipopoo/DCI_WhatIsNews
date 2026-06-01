@@ -2,8 +2,10 @@ package com.whatisnews.service.impl;
 
 import com.whatisnews.dto.NewsDTO;
 import com.whatisnews.dto.PageResult;
+import com.whatisnews.entity.MediaFile;
 import com.whatisnews.entity.News;
 import com.whatisnews.mapper.NewsMapper;
+import com.whatisnews.repository.MediaFileRepository;
 import com.whatisnews.repository.NewsRepository;
 import com.whatisnews.service.NewsService;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,7 +18,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,6 +36,7 @@ public class NewsServiceImpl implements NewsService {
 
     private final NewsRepository newsRepository;
     private final NewsMapper newsMapper;
+    private final MediaFileRepository mediaFileRepository;
 
     // ==================== Public Methods ====================
 
@@ -136,6 +146,9 @@ public class NewsServiceImpl implements NewsService {
         News news = newsRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("News not found: " + id));
 
+        // Capture old content before modification for media diff
+        String oldContent = news.getContent();
+
         news.setTitle(dto.getTitle());
         news.setSubtitle(dto.getSubtitle());
         news.setSummary(dto.getSummary());
@@ -157,17 +170,93 @@ public class NewsServiceImpl implements NewsService {
         }
 
         news = newsRepository.save(news);
+
+        // Clean up media files that were removed from content during this edit
+        cleanUpRemovedMediaFiles(news, oldContent);
+
         log.info("Updated news: id={}", news.getId());
         return newsMapper.toDTO(news);
     }
 
+    /**
+     * Compare old and new content; delete media files removed during editing.
+     */
+    private void cleanUpRemovedMediaFiles(News news, String oldContent) {
+        if (oldContent == null) oldContent = "";
+        String newContent = news.getContent() != null ? news.getContent() : "";
+
+        Set<String> oldPaths = extractUploadPaths(oldContent);
+        Set<String> newPaths = extractUploadPaths(newContent);
+
+        // Files in old content but not in new = removed by user
+        for (String filePath : oldPaths) {
+            if (!newPaths.contains(filePath)) {
+                try {
+                    cleanupSingleFile(filePath, news.getId());
+                } catch (Exception e) {
+                    log.warn("Failed to clean up removed media: {}", filePath, e);
+                }
+            }
+        }
+    }
+
+    private void cleanupSingleFile(String filePath, Long excludeNewsId) {
+        long refCount = newsRepository.countByContentContainingAndIdNot(filePath, excludeNewsId);
+        if (refCount == 0) {
+            mediaFileRepository.findByFilePath(filePath).ifPresent(mediaFile -> {
+                try {
+                    Path physicalPath = Paths.get("uploads", mediaFile.getStoredName());
+                    Files.deleteIfExists(physicalPath);
+                } catch (Exception e) {
+                    log.warn("Failed to delete physical file: {}", mediaFile.getStoredName(), e);
+                }
+                mediaFileRepository.delete(mediaFile);
+                log.info("Cleaned up media: id={}, file={}", mediaFile.getId(), filePath);
+            });
+        }
+    }
+
+    /**
+     * Extract /uploads/* paths from HTML content.
+     */
+    private Set<String> extractUploadPaths(String content) {
+        Set<String> paths = new HashSet<>();
+        if (content == null || content.isEmpty()) return paths;
+        Pattern pattern = Pattern.compile("/uploads/[^\"'\\s<>]+");
+        Matcher matcher = pattern.matcher(content);
+        while (matcher.find()) {
+            paths.add(matcher.group());
+        }
+        return paths;
+    }
+
+    /**
+     * Extract /uploads/* paths from article content and delete files that are
+     * only referenced by this article (no other active articles use them).
+     */
+    private void cleanUpMediaFiles(News news) {
+        Set<String> filePaths = extractUploadPaths(news.getContent() != null ? news.getContent() : "");
+        for (String filePath : filePaths) {
+            try {
+                cleanupSingleFile(filePath, news.getId());
+            } catch (Exception e) {
+                log.warn("Failed to check/clean media file: {}", filePath, e);
+            }
+        }
+    }
+
     @Override
     public void deleteNews(Long id) {
-        newsRepository.findById(id)
+        News news = newsRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("News not found: " + id));
+
+        // Extract and clean up media files referenced in the article content
+        cleanUpMediaFiles(news);
+
         newsRepository.softDelete(id);
         log.info("Soft-deleted news: id={}", id);
     }
+
 
     @Override
     public void togglePublish(Long id) {
