@@ -4,7 +4,7 @@ import { getNewsById, createNews, updateNews } from '@/api/news';
 import { getAllCategories } from '@/api/category';
 import { uploadFile } from '@/api/media';
 import type { NewsFormData, Category } from '@/types';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Node } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
@@ -14,6 +14,36 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
+
+// Custom TipTap Video node extension
+const VideoNode = Node.create({
+  name: 'videoNode',
+  group: 'block',
+  atom: true,
+  addAttributes() { return { src: { default: null }, controls: { default: 'true' }, style: { default: 'max-width:100%;width:100%;border-radius:6px;' } }; },
+  parseHTML() { return [{ tag: 'video' }]; },
+  renderHTML({ HTMLAttributes }: any) { return ['video', { controls: true, preload: 'metadata', ...HTMLAttributes }]; },
+});
+
+// Custom TipTap Audio node extension
+const AudioNode = Node.create({
+  name: 'audioNode',
+  group: 'block',
+  atom: true,
+  addAttributes() { return { src: { default: null }, controls: { default: 'true' }, style: { default: 'width:100%;' } }; },
+  parseHTML() { return [{ tag: 'audio' }]; },
+  renderHTML({ HTMLAttributes }: any) { return ['audio', { controls: true, preload: 'metadata', ...HTMLAttributes }]; },
+});
+
+// Allow wrapper div for video styling
+const WrapperDiv = Node.create({
+  name: 'wrapperDiv',
+  group: 'block',
+  content: 'block+',
+  addAttributes() { return { class: { default: '' }, style: { default: '' } }; },
+  parseHTML() { return [{ tag: 'div.video-wrapper' }, { tag: 'div.file-attachment' }]; },
+  renderHTML({ HTMLAttributes }: any) { return ['div', HTMLAttributes, 0]; },
+});
 
 export default function NewsEdit() {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +72,9 @@ export default function NewsEdit() {
       TableRow,
       TableCell,
       TableHeader,
+      VideoNode,
+      AudioNode,
+      WrapperDiv,
     ],
     content: initialContent,
     onUpdate: ({ editor }) => {
@@ -91,59 +124,72 @@ export default function NewsEdit() {
     finally { setUploading(false); }
   };
 
-  // Generic file upload helper
+  // Generic file upload helper (returns URL on success)
   const uploadAndGetUrl = async (file: File): Promise<string | null> => {
     try {
       const res = await uploadFile(file);
       if (res.code === 200) return res.data.filePath;
+      alert('Upload failed: ' + (res.message || 'Unknown error'));
       return null;
-    } catch { return null; }
+    } catch (e: any) {
+      alert('Upload failed: ' + (e?.message || 'Network error'));
+      return null;
+    }
   };
 
-  // Image upload handler
-  const handleImageUpload = useCallback(() => {
+  // Trigger file picker and upload
+  const pickAndUpload = useCallback((accept: string, onDone: (url: string, file: File) => void) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*';
+    input.accept = accept;
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file || !editor) return;
       const url = await uploadAndGetUrl(file);
-      if (url) editor.chain().focus().setImage({ src: url }).run();
+      if (url) onDone(url, file);
+      input.remove();
     };
+    // Handle cancel (no file selected)
+    input.oncancel = () => input.remove();
     input.click();
   }, [editor]);
 
-  // File attachment handler (PDF, video, etc.)
+  // Image upload
+  const handleImageUpload = useCallback(() => {
+    pickAndUpload('image/*', (url) => {
+      editor?.chain().focus().setImage({ src: url }).run();
+    });
+  }, [editor, pickAndUpload]);
+
+  // File/Video upload
   const handleFileUpload = useCallback(() => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.txt,.mp4,.mov,.avi,.webm,.mp3';
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file || !editor) return;
-      const url = await uploadAndGetUrl(file);
-      if (url) {
-        const isVideo = file.type.startsWith('video/');
-        if (isVideo) {
-          // Insert video as HTML5 video tag
-          editor.chain().focus().insertContent(
-            `<div class="video-wrapper"><video controls src="${url}" style="max-width:100%;margin:1rem 0;"></video></div><p></p>`
-          ).run();
-        } else {
-          // Insert as download link with file icon
-          const ext = file.name.split('.').pop()?.toUpperCase() || 'FILE';
-          editor.chain().focus().insertContent(
-            `<p><a href="${url}" download="${file.name}" class="file-attachment" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid #ddd;border-radius:6px;text-decoration:none;color:#333;background:#f9f9f9;margin:8px 0;">
-              <span style="font-size:1.2em;">📎</span>
-              <span><strong>${file.name}</strong><br><small style="color:#888;">${ext} · ${(file.size / 1024).toFixed(0)} KB · Click to download</small></span>
-            </a></p><p></p>`
-          ).run();
-        }
+    pickAndUpload('.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.txt,.mp4,.mov,.avi,.webm,.mkv,.mp3', (url, file) => {
+      if (file.type.startsWith('video/')) {
+        editor?.chain().focus().insertContent({
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: `🎬 ${file.name}`, marks: [{ type: 'bold' }] },
+          ],
+        }).run();
+        editor?.chain().focus().insertContent(
+          `<div class="video-wrapper" style="margin:12px 0;"><video controls preload="metadata" src="${url}" style="max-width:100%;width:100%;border-radius:6px;" title="${file.name}"></video></div><p></p>`
+        ).run();
+      } else if (file.type.startsWith('audio/')) {
+        editor?.chain().focus().insertContent(
+          `<div style="margin:12px 0;"><audio controls preload="metadata" src="${url}" style="width:100%;" title="${file.name}"></audio></div><p></p>`
+        ).run();
+      } else {
+        const ext = file.name.split('.').pop()?.toUpperCase() || 'FILE';
+        const sizeStr = file.size > 1048576 ? (file.size / 1048576).toFixed(1) + ' MB' : (file.size / 1024).toFixed(0) + ' KB';
+        editor?.chain().focus().insertContent(
+          `<p style="margin:12px 0;"><a href="${url}" download="${file.name}" style="display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid #ddd;border-radius:8px;text-decoration:none;color:#333;background:#f9f9f9;">
+            <span style="font-size:1.5em;">📎</span>
+            <span><strong style="color:#111;">${file.name}</strong><br><small style="color:#888;">${ext} · ${sizeStr} · Click to download</small></span>
+          </a></p><p></p>`
+        ).run();
       }
-    };
-    input.click();
-  }, [editor]);
+    });
+  }, [editor, pickAndUpload]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

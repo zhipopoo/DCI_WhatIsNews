@@ -74,10 +74,13 @@ export default function MediaManage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Media Library</h1>
-        <label className={`bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors text-sm font-medium cursor-pointer ${uploading ? 'opacity-50' : ''}`}>
-          {uploading ? 'Uploading...' : '+ Upload'}
-          <input ref={fileInputRef} type="file" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip" onChange={handleUpload} className="hidden" disabled={uploading} />
-        </label>
+        <div className="flex items-center gap-3">
+          <label className={`bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors text-sm font-medium cursor-pointer ${uploading ? 'opacity-50' : ''}`}>
+            {uploading ? 'Uploading...' : '+ Upload'}
+            <input ref={fileInputRef} type="file" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip" onChange={handleUpload} className="hidden" disabled={uploading} />
+          </label>
+          <span className="text-xs text-gray-400">Max 2GB per file. For larger files, use chunked upload or object storage.</span>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">

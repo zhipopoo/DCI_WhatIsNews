@@ -123,41 +123,21 @@ export default function Layout() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 mt-16">
-        <div className="max-w-news mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-primary-600 rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">DCI</span>
-                </div>
-                <span className="text-white font-bold text-base">WhatIsNews</span>
+        <div className="max-w-news mx-auto px-4 py-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-primary-600 rounded flex items-center justify-center">
+                <span className="text-white font-bold text-[10px]">DCI</span>
               </div>
-              <p className="text-sm leading-relaxed">Your trusted source for technology, cloud computing, and AI news.</p>
+              <span className="text-white font-bold text-sm tracking-tight">WhatIsNews</span>
             </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Categories</h4>
-              <ul className="space-y-2 text-sm">
-                {categories.map((cat) => (
-                  <li key={cat.id}>
-                    <Link to={`/category/${cat.slug}`} className="hover:text-white transition-colors">{cat.name}</Link>
-                  </li>
-                ))}
-              </ul>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs">
+              {categories.map((cat) => (
+                <Link key={cat.id} to={`/category/${cat.slug}`} className="hover:text-white transition-colors">{cat.name}</Link>
+              ))}
+              <Link to="/news" className="hover:text-white transition-colors">All News</Link>
             </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link to="/news" className="hover:text-white transition-colors">All News</Link></li>
-                <li><Link to="/admin/login" className="hover:text-white transition-colors">Admin Panel</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">About</h4>
-              <p className="text-sm leading-relaxed">WhatIsNews delivers the latest insights on cloud services, AI models, and technology trends.</p>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-10 pt-6 text-center text-xs">
-            &copy; {new Date().getFullYear()} WhatIsNews. All rights reserved.
+            <span className="text-xs text-gray-500">&copy; {new Date().getFullYear()} WhatIsNews</span>
           </div>
         </div>
       </footer>
