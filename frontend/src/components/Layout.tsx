@@ -49,9 +49,8 @@ export default function Layout() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link to="/" className="px-4 py-2 text-sm text-gray-700 hover:text-primary-600 transition-colors rounded">Home</Link>
             <Link to="/news" className="px-4 py-2 text-sm text-gray-700 hover:text-primary-600 transition-colors rounded">News</Link>
-            {categories.slice(0, 4).map((cat) => (
+            {categories.filter(cat => cat.slug !== 'news').slice(0, 4).map((cat) => (
               <Link
                 key={cat.id}
                 to={`/category/${cat.slug}`}
@@ -97,7 +96,6 @@ export default function Layout() {
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-t px-4 py-3 space-y-1">
-            <Link to="/" className="block py-2.5 px-3 text-sm text-gray-700 rounded hover:bg-gray-50" onClick={() => setMobileMenuOpen(false)}>Home</Link>
             <Link to="/news" className="block py-2.5 px-3 text-sm text-gray-700 rounded hover:bg-gray-50" onClick={() => setMobileMenuOpen(false)}>News</Link>
             {categories.map((cat) => (
               <Link key={cat.id} to={`/category/${cat.slug}`} className="block py-2.5 px-3 text-sm text-gray-700 rounded hover:bg-gray-50" onClick={() => setMobileMenuOpen(false)}>

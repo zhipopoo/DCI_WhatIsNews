@@ -31,7 +31,7 @@ public class NewsServiceImpl implements NewsService {
     // ==================== Public Methods ====================
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public NewsDTO getPublishedNews(Long id) {
         News news = newsRepository.findByIdActive(id)
                 .orElseThrow(() -> new EntityNotFoundException("News not found: " + id));

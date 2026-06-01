@@ -28,6 +28,7 @@
   }
 }
 
+
 /* Rich text content styles */
 .rich-content h1 { @apply text-3xl font-bold mt-8 mb-4; }
 .rich-content h2 { @apply text-2xl font-bold mt-6 mb-3; }

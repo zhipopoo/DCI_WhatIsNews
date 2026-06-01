@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getTopNews, getLatestNews } from '@/api/news';
 import { getAllCategories } from '@/api/category';
 import type { NewsItem, Category } from '@/types';
+import HeroCarousel from '@/components/HeroCarousel';
 
 export default function Home() {
   const [topNews, setTopNews] = useState<NewsItem[]>([]);
@@ -32,82 +33,17 @@ export default function Home() {
     );
   }
 
-  const heroNews = topNews.length > 0 ? topNews[0] : latestNews[0];
   const secondaryTop = topNews.slice(1, 3);
 
   return (
     <div>
-      {/* Hero / Banner Section */}
-      {heroNews && (
-        <section className="relative bg-gray-900 overflow-hidden">
-          {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900 to-primary-900/80" />
-          <div className="absolute inset-0 opacity-20" style={{
-            backgroundImage: 'radial-gradient(circle at 80% 50%, #C7000B 0%, transparent 60%)'
-          }} />
-
-          <div className="relative max-w-news mx-auto px-4 py-16 md:py-24">
-            <div className="max-w-2xl">
-              {heroNews.categoryName && (
-                <span className="inline-block bg-primary-600/90 text-white text-xs px-3 py-1 rounded mb-4 font-medium">
-                  {heroNews.categoryName}
-                </span>
-              )}
-              <Link to={`/news/${heroNews.id}`}>
-                <h1 className="text-3xl md:text-5xl font-bold mb-4 text-white hover:text-gray-200 transition-colors leading-tight">
-                  {heroNews.title}
-                </h1>
-              </Link>
-              {heroNews.summary && (
-                <p className="text-gray-300 text-lg mb-6 line-clamp-2 leading-relaxed">{heroNews.summary}</p>
-              )}
-              <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span className="text-white font-medium">{heroNews.author}</span>
-                <span className="w-1 h-1 bg-gray-600 rounded-full" />
-                <span>{heroNews.publishedAt ? new Date(heroNews.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</span>
-                <span className="w-1 h-1 bg-gray-600 rounded-full" />
-                <span>{heroNews.viewCount} views</span>
-              </div>
-              <Link to={`/news/${heroNews.id}`} className="inline-block mt-6 bg-primary-600 text-white px-6 py-2.5 rounded hover:bg-primary-700 transition-colors text-sm font-medium">
-                Read More →
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Hero Carousel */}
+      <HeroCarousel items={topNews.length > 0 ? topNews : latestNews.slice(0, 1)} />
 
       <div className="max-w-news mx-auto px-4 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-10">
-            {/* Top/Sticky News */}
-            {topNews.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-1 h-5 bg-primary-600 rounded-full" />
-                  <h2 className="text-lg font-bold text-gray-900">Top Stories</h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {topNews.map((item) => (
-                    <Link key={item.id} to={`/news/${item.id}`} className="card group">
-                      {item.coverImage && (
-                        <img src={item.coverImage} alt={item.title} className="w-full h-44 object-cover" />
-                      )}
-                      <div className="p-4">
-                        {item.categoryName && (
-                          <span className="text-xs text-primary-600 font-medium">{item.categoryName}</span>
-                        )}
-                        <h3 className="font-semibold mt-1 group-hover:text-primary-600 transition-colors line-clamp-2 text-gray-900">
-                          {item.title}
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-2 line-clamp-2">{item.summary}</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
-
             {/* Latest News */}
             <section>
               <div className="flex items-center gap-3 mb-5">

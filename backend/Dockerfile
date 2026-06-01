@@ -14,13 +14,12 @@ RUN mvn package -DskipTests -B
 # ==================== Runtime Stage ====================
 FROM eclipse-temurin:21-jre-alpine
 
-RUN addgroup -S spring && adduser -S spring -G spring
-USER spring:spring
-
 WORKDIR /app
 
 # Copy the built JAR from build stage
 COPY --from=build /build/target/*.jar app.jar
+
+RUN mkdir -p /app/uploads
 
 EXPOSE 8080
 
