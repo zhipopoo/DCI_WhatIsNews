@@ -34,10 +34,12 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Public read endpoints
+                .requestMatchers(
+                    "/uploads/**"
+                ).permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/api/news/**",
-                    "/api/categories/**",
-                    "/uploads/**"
+                    "/api/categories/**"
                 ).permitAll()
                 // Auth endpoint
                 .requestMatchers("/api/auth/**").permitAll()
