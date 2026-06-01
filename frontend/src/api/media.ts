@@ -14,3 +14,6 @@ export const listMediaFiles = (page: number = 0, size: number = 20) =>
 
 export const deleteMediaFile = (id: number) =>
   request.delete<ApiResult<void>>(`/admin/media/${id}`).then(res => res.data);
+
+export const getMediaReferences = (id: number) =>
+  request.get<ApiResult<{ id: number; title: string }[]>>(`/admin/media/${id}/references`).then(res => res.data);

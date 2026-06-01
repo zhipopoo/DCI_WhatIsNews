@@ -5,6 +5,7 @@ import com.whatisnews.entity.MediaFile;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 public interface MediaService {
@@ -17,4 +18,7 @@ public interface MediaService {
 
     /** Admin: delete a file */
     void deleteFile(Long id);
+
+    /** Get articles that reference a given media file */
+    List<Map<String, Object>> getReferencingArticles(Long mediaId);
 }

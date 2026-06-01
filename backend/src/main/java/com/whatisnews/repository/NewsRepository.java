@@ -73,4 +73,8 @@ public interface NewsRepository extends JpaRepository<News, Long>, JpaSpecificat
     /** Count active (non-deleted) articles that reference a file path, excluding a given article */
     @Query("SELECT COUNT(n) FROM News n WHERE n.isDeleted = false AND n.id != :excludeId AND n.content LIKE CONCAT('%', :filePath, '%')")
     long countByContentContainingAndIdNot(@Param("filePath") String filePath, @Param("excludeId") Long excludeId);
+
+    /** Find active articles that reference a file path */
+    @Query("SELECT n.id, n.title FROM News n WHERE n.isDeleted = false AND n.content LIKE CONCAT('%', :filePath, '%')")
+    List<Object[]> findTitleByIdByContentContaining(@Param("filePath") String filePath);
 }

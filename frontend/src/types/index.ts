@@ -104,4 +104,5 @@ export interface MediaFile {
   width?: number;
   height?: number;
   createdAt: string;
+  referencingArticles?: { id: number; title: string }[];
 }

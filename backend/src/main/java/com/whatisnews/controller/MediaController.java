@@ -41,4 +41,10 @@ public class MediaController {
         mediaService.deleteFile(id);
         return Result.ok("File deleted");
     }
+
+    /** Get articles that reference a given media file */
+    @GetMapping("/{id}/references")
+    public Result<java.util.List<java.util.Map<String, Object>>> getReferences(@PathVariable Long id) {
+        return Result.success(mediaService.getReferencingArticles(id));
+    }
 }

@@ -3,6 +3,7 @@ package com.whatisnews.service.impl;
 import com.whatisnews.dto.PageResult;
 import com.whatisnews.entity.MediaFile;
 import com.whatisnews.repository.MediaFileRepository;
+import com.whatisnews.repository.NewsRepository;
 import com.whatisnews.service.MediaService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -29,6 +32,7 @@ import java.util.UUID;
 public class MediaServiceImpl implements MediaService {
 
     private final MediaFileRepository mediaFileRepository;
+    private final NewsRepository newsRepository;
 
     @Value("${file.upload-dir:./uploads}")
     private String uploadDir;
@@ -134,5 +138,19 @@ public class MediaServiceImpl implements MediaService {
         if (filename == null) return "";
         int dotIndex = filename.lastIndexOf('.');
         return dotIndex >= 0 ? filename.substring(dotIndex) : "";
+    }
+
+    @Override
+    public List<Map<String, Object>> getReferencingArticles(Long mediaId) {
+        MediaFile mediaFile = mediaFileRepository.findById(mediaId)
+                .orElseThrow(() -> new EntityNotFoundException("Media file not found: " + mediaId));
+
+        List<Object[]> results = newsRepository.findTitleByIdByContentContaining(mediaFile.getFilePath());
+        return results.stream().map(row -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", row[0]);
+            map.put("title", row[1]);
+            return map;
+        }).collect(java.util.stream.Collectors.toList());
     }
 }
