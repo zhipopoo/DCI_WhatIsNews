@@ -126,22 +126,21 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: postgres-data
+        annotations:
+          everest.io/disk-volume-type: SAS
+          everest.io/disk-volume-tags: '{}'
+          everest.io/crypt-key-id: 2deb7b74-8f28-4252-be79-bf5b098b9a7f
+          everest.io/enterprise-project-id: 602b1aca-66a7-497a-b730-27a027da5233
         labels:
-          app: postgres
           failure-domain.beta.kubernetes.io/region: cn-hongkong-6001
           failure-domain.beta.kubernetes.io/zone: cn-hongkong-6001a
-        annotations:
-          everest.io/disk-volume-tags: '{}'
-          everest.io/disk-volume-type: SAS
-          everest.io/crypt-key-id: "2deb7b74-8f28-4252-be79-bf5b098b9a7f"
-          everest.io/csi.data-encryption-algorithm: AES_256
       spec:
         accessModes:
           - ReadWriteOnce
-        storageClassName: csi-disk-topology
         resources:
           requests:
             storage: 20Gi
+        storageClassName: csi-disk
 
 ---
 # ==================== Backend — ConfigMap ====================
