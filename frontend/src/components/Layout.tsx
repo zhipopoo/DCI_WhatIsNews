@@ -26,12 +26,12 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Top bar */}
-      <div className="bg-gray-900 text-gray-400 text-xs">
+      {/* <div className="bg-gray-900 text-gray-400 text-xs">
         <div className="max-w-news mx-auto px-4 h-8 flex items-center justify-between">
           <span>Welcome to WhatIsNews — Your Trusted Source for Tech & AI News</span>
           <Link to="/admin/login" className="hover:text-white transition-colors">Admin Panel</Link>
         </div>
-      </div>
+      </div> */}
 
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
