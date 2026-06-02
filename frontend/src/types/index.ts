@@ -132,3 +132,24 @@ export interface MediaFile {
   createdAt: string;
   referencingArticles?: { id: number; title: string }[];
 }
+
+// ==================== Chunked Upload ====================
+
+export interface InitChunkedUploadRequest {
+  fileName: string;
+  fileSize: number;
+  totalChunks: number;
+  chunkSize: number;
+  mimeType: string;
+}
+
+export interface ChunkedUploadStatus {
+  uploadId: string;
+  fileName: string;
+  fileSize: number;
+  totalChunks: number;
+  chunkSize: number;
+  status: string;
+  uploadedChunks: number[];
+  createdAt: string;
+}

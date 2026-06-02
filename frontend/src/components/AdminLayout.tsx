@@ -48,7 +48,7 @@ export default function AdminLayout() {
               <span className="text-white font-bold text-xs">DCI</span>
             </div>
             <div>
-              <span className="font-bold text-sm text-white">WhatIsNews</span>
+              <span className="font-bold text-sm text-white">WhatIsNew</span>
               <p className="text-[10px] text-gray-500">Admin Console</p>
             </div>
           </Link>

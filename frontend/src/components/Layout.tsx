@@ -28,7 +28,7 @@ export default function Layout() {
       {/* Top bar */}
       {/* <div className="bg-gray-900 text-gray-400 text-xs">
         <div className="max-w-news mx-auto px-4 h-8 flex items-center justify-between">
-          <span>Welcome to WhatIsNews — Your Trusted Source for Tech & AI News</span>
+          <span>Welcome to WhatIsNew — Your Trusted Source for Tech & AI News</span>
           <Link to="/admin/login" className="hover:text-white transition-colors">Admin Panel</Link>
         </div>
       </div> */}
@@ -43,7 +43,7 @@ export default function Layout() {
             </div>
             <div>
               <span className="text-lg font-bold text-gray-900 tracking-tight">WhatIs</span>
-              <span className="text-lg font-bold text-primary-600 tracking-tight">News</span>
+              <span className="text-lg font-bold text-primary-600 tracking-tight">New</span>
             </div>
           </Link>
 
@@ -129,7 +129,7 @@ export default function Layout() {
               <div className="w-7 h-7 bg-primary-600 rounded flex items-center justify-center">
                 <span className="text-white font-bold text-[10px]">DCI</span>
               </div>
-              <span className="text-white font-bold text-sm tracking-tight">WhatIsNews</span>
+              <span className="text-white font-bold text-sm tracking-tight">WhatIsNew</span>
             </div>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs">
               {categories.map((cat) => (
@@ -137,7 +137,7 @@ export default function Layout() {
               ))}
               <Link to="/news" className="hover:text-white transition-colors">All News</Link>
             </div>
-            <span className="text-xs text-gray-500">&copy; {new Date().getFullYear()} WhatIsNews</span>
+            <span className="text-xs text-gray-500">&copy; {new Date().getFullYear()} WhatIsNew</span>
           </div>
         </div>
       </footer>

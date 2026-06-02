@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getNewsById, createNews, updateNews } from '@/api/news';
 import { getAllCategories } from '@/api/category';
-import { uploadFile } from '@/api/media';
+import { smartUploadFile } from '@/utils/chunkedUpload';
 import type { NewsFormData, Category } from '@/types';
 import { useEditor, EditorContent, Node } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -54,6 +54,9 @@ export default function NewsEdit() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [editorUploading, setEditorUploading] = useState(false);
+  const [editorUploadProgress, setEditorUploadProgress] = useState(0);
+  const [editorUploadFileName, setEditorUploadFileName] = useState('');
   const [initialContent, setInitialContent] = useState('');
 
   const [form, setForm] = useState<NewsFormData>({
@@ -119,18 +122,18 @@ export default function NewsEdit() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    try { const res = await uploadFile(file); if (res.code === 200) handleChange('coverImage', res.data.filePath); }
-    catch { alert('Upload failed'); }
+    try {
+      const mediaFile = await smartUploadFile(file);
+      handleChange('coverImage', mediaFile.filePath);
+    } catch { alert('Upload failed'); }
     finally { setUploading(false); }
   };
 
   // Generic file upload helper (returns URL on success)
-  const uploadAndGetUrl = async (file: File): Promise<string | null> => {
+  const uploadAndGetUrl = async (file: File, onProgress?: (p: number) => void): Promise<string | null> => {
     try {
-      const res = await uploadFile(file);
-      if (res.code === 200) return res.data.filePath;
-      alert('Upload failed: ' + (res.message || 'Unknown error'));
-      return null;
+      const mediaFile = await smartUploadFile(file, { onProgress });
+      return mediaFile.filePath;
     } catch (e: any) {
       alert('Upload failed: ' + (e?.message || 'Network error'));
       return null;
@@ -145,8 +148,14 @@ export default function NewsEdit() {
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file || !editor) return;
-      const url = await uploadAndGetUrl(file);
+      setEditorUploading(true);
+      setEditorUploadProgress(0);
+      setEditorUploadFileName(file.name);
+      const url = await uploadAndGetUrl(file, (p) => setEditorUploadProgress(p));
       if (url) onDone(url, file);
+      setEditorUploading(false);
+      setEditorUploadProgress(0);
+      setEditorUploadFileName('');
       input.remove();
     };
     // Handle cancel (no file selected)
@@ -315,6 +324,24 @@ export default function NewsEdit() {
             >🔗</button>
             <ToolbarButton onClick={() => editor?.chain().focus().unsetLink().run()} title="Remove Link" active={false}>✂</ToolbarButton>
           </div>
+
+          {/* Editor upload progress */}
+          {editorUploading && (
+            <div className="bg-primary-50 rounded-lg border border-primary-100 p-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-sm text-gray-700 truncate flex-1 mr-4">
+                  Uploading <span className="font-medium">{editorUploadFileName}</span>
+                </span>
+                <span className="text-sm font-medium text-primary-600">{editorUploadProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-primary-600 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${editorUploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Editor area */}
           <div className="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent transition-all">

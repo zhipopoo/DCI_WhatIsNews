@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { listMediaFiles, uploadFile, deleteMediaFile, getMediaReferences } from '@/api/media';
+import { listMediaFiles, deleteMediaFile, getMediaReferences } from '@/api/media';
+import { smartUploadFile, cancelUpload } from '@/utils/chunkedUpload';
 import type { MediaFile } from '@/types';
 
 export default function MediaManage() {
@@ -9,10 +10,13 @@ export default function MediaManage() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadFileName, setUploadFileName] = useState('');
   const [references, setReferences] = useState<{ id: number; title: string }[]>([]);
   const [refMediaId, setRefMediaId] = useState<number | null>(null);
   const [loadingRefs, setLoadingRefs] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadIdRef = useRef<string | null>(null);
 
   const fetchFiles = () => {
     listMediaFiles(page, 15).then((res) => {
@@ -30,11 +34,34 @@ export default function MediaManage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    setUploadProgress(0);
+    setUploadFileName(file.name);
     try {
-      const res = await uploadFile(file);
-      if (res.code === 200) { setPage(0); fetchFiles(); } else alert(res.message);
-    } catch { alert('Upload failed'); }
-    finally { setUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
+      const mediaFile = await smartUploadFile(file, {
+        onProgress: (percent) => setUploadProgress(percent),
+      });
+      setPage(0);
+      fetchFiles();
+    } catch (err: any) {
+      alert('Upload failed: ' + (err?.message || 'Network error'));
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+      setUploadFileName('');
+      uploadIdRef.current = null;
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleCancelUpload = async () => {
+    if (uploadIdRef.current) {
+      try { await cancelUpload(uploadIdRef.current); } catch {}
+      uploadIdRef.current = null;
+    }
+    setUploading(false);
+    setUploadProgress(0);
+    setUploadFileName('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleDelete = async (id: number, name: string) => {
@@ -75,13 +102,37 @@ export default function MediaManage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Media Library</h1>
         <div className="flex items-center gap-3">
-          <label className={`bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors text-sm font-medium cursor-pointer ${uploading ? 'opacity-50' : ''}`}>
+          <label className={`bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors text-sm font-medium cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
             {uploading ? 'Uploading...' : '+ Upload'}
             <input ref={fileInputRef} type="file" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip" onChange={handleUpload} className="hidden" disabled={uploading} />
           </label>
-          <span className="text-xs text-gray-400">Max 2GB per file. For larger files, use chunked upload or object storage.</span>
+          <span className="text-xs text-gray-400">Max 2GB per file. Supports chunked upload with progress & resume.</span>
         </div>
       </div>
+
+      {/* Upload progress bar */}
+      {uploading && (
+        <div className="mb-4 bg-white rounded-lg border border-gray-100 p-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-sm text-gray-700 truncate flex-1 mr-4">
+              Uploading <span className="font-medium">{uploadFileName}</span>
+            </span>
+            <span className="text-sm font-medium text-primary-600">{uploadProgress}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-primary-600 h-full rounded-full transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
+          <button
+            onClick={handleCancelUpload}
+            className="mt-2 text-xs text-red-500 hover:text-red-600 font-medium"
+          >
+            Cancel upload
+          </button>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
