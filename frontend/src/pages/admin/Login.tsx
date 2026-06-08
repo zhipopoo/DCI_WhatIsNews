@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
@@ -11,10 +11,11 @@ export default function AdminLogin() {
   const { setAuth, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
-  if (isAuthenticated) {
-    navigate('/admin', { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/admin', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
