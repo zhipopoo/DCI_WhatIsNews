@@ -12,6 +12,7 @@ export default function MediaManage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadFileName, setUploadFileName] = useState('');
+  const [batchInfo, setBatchInfo] = useState({ current: 0, total: 0 });
   const [references, setReferences] = useState<{ id: number; title: string }[]>([]);
   const [refMediaId, setRefMediaId] = useState<number | null>(null);
   const [loadingRefs, setLoadingRefs] = useState(false);
@@ -31,26 +32,43 @@ export default function MediaManage() {
   useEffect(() => { fetchFiles(); }, [page]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+
     setUploading(true);
-    setUploadProgress(0);
-    setUploadFileName(file.name);
-    try {
-      const mediaFile = await smartUploadFile(file, {
-        onProgress: (percent) => setUploadProgress(percent),
-      });
+    setBatchInfo({ current: 0, total: fileList.length });
+
+    let hasError = false;
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      setBatchInfo({ current: i + 1, total: fileList.length });
+      setUploadProgress(0);
+      setUploadFileName(file.name);
+
+      try {
+        await smartUploadFile(file, {
+          onProgress: (percent) => setUploadProgress(percent),
+          onUploadId: (id) => { uploadIdRef.current = id; },
+        });
+      } catch (err: any) {
+        alert(`Upload failed for "${file.name}": ` + (err?.message || 'Network error'));
+        hasError = true;
+        // Continue with next file instead of aborting all
+      }
+    }
+
+    // Refresh the list if at least one file succeeded
+    if (!hasError || fileList.length > 1) {
       setPage(0);
       fetchFiles();
-    } catch (err: any) {
-      alert('Upload failed: ' + (err?.message || 'Network error'));
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-      setUploadFileName('');
-      uploadIdRef.current = null;
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
+
+    setUploading(false);
+    setUploadProgress(0);
+    setUploadFileName('');
+    setBatchInfo({ current: 0, total: 0 });
+    uploadIdRef.current = null;
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleCancelUpload = async () => {
@@ -61,6 +79,7 @@ export default function MediaManage() {
     setUploading(false);
     setUploadProgress(0);
     setUploadFileName('');
+    setBatchInfo({ current: 0, total: 0 });
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -104,7 +123,7 @@ export default function MediaManage() {
         <div className="flex items-center gap-3">
           <label className={`bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors text-sm font-medium cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
             {uploading ? 'Uploading...' : '+ Upload'}
-            <input ref={fileInputRef} type="file" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip" onChange={handleUpload} className="hidden" disabled={uploading} />
+            <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip" onChange={handleUpload} className="hidden" disabled={uploading} />
           </label>
           <span className="text-xs text-gray-400">Max 2GB per file. Supports chunked upload with progress & resume.</span>
         </div>
@@ -115,7 +134,11 @@ export default function MediaManage() {
         <div className="mb-4 bg-white rounded-lg border border-gray-100 p-3">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-sm text-gray-700 truncate flex-1 mr-4">
-              Uploading <span className="font-medium">{uploadFileName}</span>
+              {batchInfo.total > 1 ? (
+                <>Uploading <span className="font-medium text-primary-600">({batchInfo.current}/{batchInfo.total})</span> <span className="font-medium">{uploadFileName}</span></>
+              ) : (
+                <>Uploading <span className="font-medium">{uploadFileName}</span></>
+              )}
             </span>
             <span className="text-sm font-medium text-primary-600">{uploadProgress}%</span>
           </div>
@@ -129,7 +152,7 @@ export default function MediaManage() {
             onClick={handleCancelUpload}
             className="mt-2 text-xs text-red-500 hover:text-red-600 font-medium"
           >
-            Cancel upload
+            Cancel current upload
           </button>
         </div>
       )}

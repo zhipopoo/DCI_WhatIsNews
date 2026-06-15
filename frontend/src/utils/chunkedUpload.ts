@@ -14,6 +14,7 @@ const MAX_CHUNK_RETRIES = 3;
 
 export interface ChunkedUploadCallbacks {
   onProgress?: (percent: number) => void;
+  onUploadId?: (uploadId: string) => void;
 }
 
 /**
@@ -55,6 +56,7 @@ export async function uploadChunkedFile(
       const status = await getChunkedUploadStatus(resumeUploadId);
       if (status.code === 200 && status.data.status === 'IN_PROGRESS') {
         uploadId = resumeUploadId;
+        callbacks?.onUploadId?.(uploadId);
         const uploaded = new Set(status.data.uploadedChunks);
         // Find the first missing chunk
         while (startChunkIndex < totalChunks && uploaded.has(startChunkIndex)) {
@@ -63,13 +65,16 @@ export async function uploadChunkedFile(
       } else {
         // Session expired or completed, start fresh
         uploadId = await initUpload(file);
+        callbacks?.onUploadId?.(uploadId);
       }
     } catch {
       // Status check failed, start fresh
       uploadId = await initUpload(file);
+      callbacks?.onUploadId?.(uploadId);
     }
   } else {
     uploadId = await initUpload(file);
+    callbacks?.onUploadId?.(uploadId);
   }
 
   // Upload chunks sequentially with retry
