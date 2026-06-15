@@ -3,38 +3,38 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: whatisnews-postgres
+    container_name: whatisnew-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-whatisnews}
-      POSTGRES_USER: ${POSTGRES_USER:-whatisnews}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-whatisnews123}
+      POSTGRES_DB: ${POSTGRES_DB:-whatisnew}
+      POSTGRES_USER: ${POSTGRES_USER:-whatisnew}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-whatisnew123}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-whatisnews} -d ${POSTGRES_DB:-whatisnews}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-whatisnew} -d ${POSTGRES_DB:-whatisnew}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - whatisnews-network
+      - whatisnew-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: whatisnews-backend
+    container_name: whatisnew-backend
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-whatisnews}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-whatisnews}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-whatisnews123}
-      JWT_SECRET: ${JWT_SECRET:-WhatIsNews-JWT-Secret-Key-2024-Production}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-whatisnew}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-whatisnew}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-whatisnew123}
+      JWT_SECRET: ${JWT_SECRET:-WhatIsNew-JWT-Secret-Key-2024-Production}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
       FILE_UPLOAD_DIR: ${FILE_UPLOAD_DIR:-/app/uploads}
       ADMIN_DEFAULT_USERNAME: ${ADMIN_DEFAULT_USERNAME:-admin}
@@ -44,20 +44,20 @@ services:
     volumes:
       - uploads_data:/app/uploads
     networks:
-      - whatisnews-network
+      - whatisnew-network
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: whatisnews-frontend
+    container_name: whatisnew-frontend
     restart: unless-stopped
     depends_on:
       - backend
     ports:
       - "${FRONTEND_PORT:-3000}:80"
     networks:
-      - whatisnews-network
+      - whatisnew-network
 
 volumes:
   postgres_data:
@@ -66,5 +66,5 @@ volumes:
     driver: local
 
 networks:
-  whatisnews-network:
+  whatisnew-network:
     driver: bridge

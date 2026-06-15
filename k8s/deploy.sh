@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# WhatIsNews K8s Deploy Script
+# WhatIsNew K8s Deploy Script
 # Usage: ./k8s/deploy.sh [namespace]
 #   每次提交后执行此脚本即可完成部署
 # ============================================================

@@ -1,5 +1,5 @@
 # ============================================================
-# WhatIsNews — K8s All-in-One Manifest
+# WhatIsNew — K8s All-in-One Manifest
 # Namespace: dci-news
 # Images:   Frontend v1.1 / Backend v1.1 / PostgreSQL 16
 # Storage:  Huawei Cloud EVS encrypted disk (CSI)
@@ -13,7 +13,7 @@ kind: Namespace
 metadata:
   name: dci-news
   labels:
-    app: whatisnews
+    app: whatisnew
 
 ---
 # ==================== Secret ====================
@@ -23,16 +23,16 @@ metadata:
   name: dci-news-secret
   namespace: dci-news
   labels:
-    app: whatisnews
+    app: whatisnew
 type: Opaque
 stringData:
-  POSTGRES_DB: "whatisnews"
-  POSTGRES_USER: "whatisnews"
-  POSTGRES_PASSWORD: "whatisnews123"
-  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-svc.dci-news.svc.cluster.local:5432/whatisnews"
-  SPRING_DATASOURCE_USERNAME: "whatisnews"
-  SPRING_DATASOURCE_PASSWORD: "whatisnews123"
-  JWT_SECRET: "WhatIsNews-JWT-Secret-Key-2024-Production"
+  POSTGRES_DB: "whatisnew"
+  POSTGRES_USER: "whatisnew"
+  POSTGRES_PASSWORD: "whatisnew123"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-svc.dci-news.svc.cluster.local:5432/whatisnew"
+  SPRING_DATASOURCE_USERNAME: "whatisnew"
+  SPRING_DATASOURCE_PASSWORD: "whatisnew123"
+  JWT_SECRET: "WhatIsNew-JWT-Secret-Key-2024-Production"
   JWT_EXPIRATION: "86400000"
   ADMIN_DEFAULT_USERNAME: "admin"
   ADMIN_DEFAULT_PASSWORD: "admin123"
@@ -103,9 +103,9 @@ spec:
               command:
                 - pg_isready
                 - -U
-                - whatisnews
+                - whatisnew
                 - -d
-                - whatisnews
+                - whatisnew
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -114,9 +114,9 @@ spec:
               command:
                 - pg_isready
                 - -U
-                - whatisnews
+                - whatisnew
                 - -d
-                - whatisnews
+                - whatisnew
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 3
@@ -158,7 +158,7 @@ data:
 
     spring:
       application:
-        name: whatisnews-backend
+        name: whatisnew-backend
       datasource:
         url: ${SPRING_DATASOURCE_URL}
         username: ${SPRING_DATASOURCE_USERNAME}
@@ -205,7 +205,7 @@ data:
     logging:
       level:
         root: INFO
-        com.whatisnews: DEBUG
+        com.whatisnew: DEBUG
         org.springframework.security: INFO
 
 ---

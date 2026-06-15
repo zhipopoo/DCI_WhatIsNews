@@ -1,4 +1,4 @@
-# WhatIsNews Backend Helm Values
+# WhatIsNew Backend Helm Values
 
 namespace: dci-news
 

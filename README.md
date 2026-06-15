@@ -1,4 +1,4 @@
-# WhatIsNews — News Platform
+# WhatIsNew — News Platform
 
 A full-stack news and information platform built with React + Spring Boot.
 
@@ -18,7 +18,7 @@ A full-stack news and information platform built with React + Spring Boot.
 ### Project Structure
 
 ```
-WhatIsNews/
+WhatIsNew/
 ├── docker-compose.yml          # One-command full-stack startup
 ├── .env                        # Environment variables
 ├── .gitignore
@@ -28,8 +28,8 @@ WhatIsNews/
 │   ├── Dockerfile
 │   ├── pom.xml
 │   └── src/main/
-│       ├── java/com/whatisnews/
-│       │   ├── WhatIsNewsApplication.java
+│       ├── java/com/whatisnew/
+│       │   ├── WhatIsNewApplication.java
 │       │   ├── common/              # Result, GlobalExceptionHandler
 │       │   ├── config/              # SecurityConfig, WebConfig, DataInitializer
 │       │   ├── controller/          # NewsController, CategoryController, AuthController, MediaController
@@ -79,7 +79,7 @@ WhatIsNews/
 
 ```bash
 # Clone the project
-cd WhatIsNews
+cd WhatIsNew
 
 # Build and start all services (PostgreSQL + Backend + Frontend)
 docker compose up -d --build
@@ -130,9 +130,9 @@ docker compose down -v
 ```bash
 # 1. Start PostgreSQL (via Docker or local install)
 docker run -d --name postgres-dev \
-  -e POSTGRES_DB=whatisnews \
-  -e POSTGRES_USER=whatisnews \
-  -e POSTGRES_PASSWORD=whatisnews123 \
+  -e POSTGRES_DB=whatisnew \
+  -e POSTGRES_USER=whatisnew \
+  -e POSTGRES_PASSWORD=whatisnew123 \
   -p 5432:5432 \
   postgres:16-alpine
 
@@ -196,8 +196,8 @@ Flyway runs migrations automatically on backend startup. To reset the database:
 
 ```bash
 # Drop and recreate (via psql)
-psql -U whatisnews -d postgres -c "DROP DATABASE whatisnews;"
-psql -U whatisnews -d postgres -c "CREATE DATABASE whatisnews;"
+psql -U whatisnew -d postgres -c "DROP DATABASE whatisnew;"
+psql -U whatisnew -d postgres -c "CREATE DATABASE whatisnew;"
 
 # Or via Docker
 docker compose down -v
@@ -212,13 +212,13 @@ All variables are defined in `.env`. You can override defaults:
 
 | Variable               | Default                                          | Description                |
 | ---------------------- | ------------------------------------------------ | -------------------------- |
-| `POSTGRES_DB`          | `whatisnews`                                     | Database name              |
-| `POSTGRES_USER`        | `whatisnews`                                     | Database user              |
-| `POSTGRES_PASSWORD`    | `whatisnews123`                                  | Database password          |
+| `POSTGRES_DB`          | `whatisnew`                                     | Database name              |
+| `POSTGRES_USER`        | `whatisnew`                                     | Database user              |
+| `POSTGRES_PASSWORD`    | `whatisnew123`                                  | Database password          |
 | `POSTGRES_PORT`        | `5432`                                           | Database port              |
 | `BACKEND_PORT`         | `8080`                                           | Backend API port           |
 | `FRONTEND_PORT`        | `3000`                                           | Frontend Nginx port        |
-| `JWT_SECRET`           | `WhatIsNews-JWT-Secret-Key-2024-Production`      | JWT signing key            |
+| `JWT_SECRET`           | `WhatIsNew-JWT-Secret-Key-2024-Production`      | JWT signing key            |
 | `JWT_EXPIRATION`       | `86400000` (24h)                                 | JWT token expiration (ms)  |
 | `FILE_UPLOAD_DIR`      | `/app/uploads`                                   | File upload directory      |
 | `ADMIN_DEFAULT_USERNAME`| `admin`                                          | Default admin username     |

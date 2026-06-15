@@ -3,12 +3,12 @@ server:
 
 spring:
   application:
-    name: whatisnews-backend
+    name: whatisnew-backend
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/whatisnews}
-    username: ${SPRING_DATASOURCE_USERNAME:whatisnews}
-    password: ${SPRING_DATASOURCE_PASSWORD:whatisnews123}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/whatisnew}
+    username: ${SPRING_DATASOURCE_USERNAME:whatisnew}
+    password: ${SPRING_DATASOURCE_PASSWORD:whatisnew123}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
@@ -44,7 +44,7 @@ spring:
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:WhatIsNews-JWT-Secret-Key-2024-Production}
+  secret: ${JWT_SECRET:WhatIsNew-JWT-Secret-Key-2024-Production}
   expiration: ${JWT_EXPIRATION:86400000}
 
 # File Upload Configuration
@@ -60,5 +60,5 @@ admin:
 logging:
   level:
     root: INFO
-    com.whatisnews: DEBUG
+    com.whatisnew: DEBUG
     org.springframework.security: INFO

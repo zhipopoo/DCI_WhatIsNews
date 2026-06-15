@@ -1,6 +1,6 @@
 apiVersion: v2
 name: news-frontend
-description: WhatIsNews Frontend SPA with Nginx
+description: WhatIsNew Frontend SPA with Nginx
 type: application
 version: 1.0.0
 appVersion: "1.0.0"

@@ -1,5 +1,5 @@
 -- ============================================================
--- WhatIsNews - Initial Database Schema (Flyway V1)
+-- WhatIsNew - Initial Database Schema (Flyway V1)
 -- ============================================================
 
 -- Enable trigram extension for text search
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS news (
     cover_image     VARCHAR(500),
     category_id     BIGINT          NOT NULL REFERENCES category(id),
     tags            VARCHAR(500),
-    author          VARCHAR(100)    NOT NULL DEFAULT 'WhatIsNews Editor',
+    author          VARCHAR(100)    NOT NULL DEFAULT 'WhatIsNew Editor',
     is_published    BOOLEAN         NOT NULL DEFAULT FALSE,
     is_top          BOOLEAN         NOT NULL DEFAULT FALSE,
     view_count      BIGINT          NOT NULL DEFAULT 0,
@@ -119,7 +119,7 @@ ON CONFLICT (slug) DO NOTHING;
 -- Default admin user (password: admin123)
 -- BCrypt $2y$10 hash for "admin123" (verified)
 INSERT INTO admin_user (username, password, display_name, email, is_active) VALUES
-    ('admin', '$2y$10$7z5cHybVxQK5oLnTBghPPe/kPuUDyRXKaVPXSn6khHy1rGj4Tvggm', 'Super Admin', 'admin@whatisnews.com', TRUE)
+    ('admin', '$2y$10$7z5cHybVxQK5oLnTBghPPe/kPuUDyRXKaVPXSn6khHy1rGj4Tvggm', 'Super Admin', 'admin@whatisnew.com', TRUE)
 ON CONFLICT (username) DO NOTHING;
 
 -- ============================================================

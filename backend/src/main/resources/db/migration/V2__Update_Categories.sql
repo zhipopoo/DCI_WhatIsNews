@@ -1,5 +1,5 @@
 -- ============================================================
--- WhatIsNews - V2: Update Categories to New Set
+-- WhatIsNew - V2: Update Categories to New Set
 -- ============================================================
 
 -- Step 1: Rename existing categories first (before inserting new ones to avoid slug conflicts)

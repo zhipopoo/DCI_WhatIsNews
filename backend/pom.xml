@@ -11,11 +11,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.whatisnews</groupId>
-    <artifactId>whatisnews-backend</artifactId>
+    <groupId>com.whatisnew</groupId>
+    <artifactId>whatisnew-backend</artifactId>
     <version>1.0.0</version>
-    <name>WhatIsNews Backend</name>
-    <description>WhatIsNews - News Platform Backend API</description>
+    <name>WhatIsNew Backend</name>
+    <description>WhatIsNew - News Platform Backend API</description>
 
     <properties>
         <java.version>21</java.version>

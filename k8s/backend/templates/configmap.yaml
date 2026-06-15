@@ -12,7 +12,7 @@ data:
 
     spring:
       application:
-        name: whatisnews-backend
+        name: whatisnew-backend
 
       datasource:
         url: ${SPRING_DATASOURCE_URL}
@@ -64,5 +64,5 @@ data:
     logging:
       level:
         root: INFO
-        com.whatisnews: DEBUG
+        com.whatisnew: DEBUG
         org.springframework.security: INFO

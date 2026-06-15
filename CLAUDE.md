@@ -1,4 +1,4 @@
-# CLAUDE.md — WhatIsNews
+# CLAUDE.md — WhatIsNew
 
 > Full-stack news & information platform. React 18 + Spring Boot 3.2 + PostgreSQL 16.
 
@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-**WhatIsNews** is a content-management and public-facing news platform. The frontend is a React 18 SPA (Vite + TailwindCSS + Zustand) and the backend is a Spring Boot 3.2 REST API (Java 21, Spring Security, JWT, JPA/Hibernate, Flyway).
+**WhatIsNew** is a content-management and public-facing news platform. The frontend is a React 18 SPA (Vite + TailwindCSS + Zustand) and the backend is a Spring Boot 3.2 REST API (Java 21, Spring Security, JWT, JPA/Hibernate, Flyway).
 
 The admin panel manages articles, categories, media uploads, and users. Public visitors browse articles through a responsive news UI with category filtering, search, and hero carousel.
 
@@ -49,8 +49,8 @@ DCI_WhatIsNews/
 │   ├── Dockerfile
 │   ├── pom.xml                  # Spring Boot 3.2.5, jjwt, MapStruct, Lombok
 │   └── src/main/
-│       ├── java/com/whatisnews/
-│       │   ├── WhatIsNewsApplication.java
+│       ├── java/com/whatisnew/
+│       │   ├── WhatIsNewApplication.java
 │       │   ├── common/
 │       │   │   ├── Result.java              # Unified response {code, message, data}
 │       │   │   └── GlobalExceptionHandler.java
@@ -210,7 +210,7 @@ npm run build                   # tsc + vite build → dist/
 { "code": 200, "message": "success", "data": ... }
 ```
 
-`Result<T>` class in `backend/src/main/java/com/whatisnews/common/Result.java` provides static factory methods: `Result.success(data)`, `Result.error(msg)`, `Result.notFound(...)`, etc.
+`Result<T>` class in `backend/src/main/java/com/whatisnew/common/Result.java` provides static factory methods: `Result.success(data)`, `Result.error(msg)`, `Result.notFound(...)`, etc.
 
 Paginated endpoints return `PageResult<T>`:
 
@@ -338,9 +338,9 @@ All in `.env` at project root:
 
 | Variable | Default | Description |
 |---|---|---|
-| `POSTGRES_DB` | `whatisnews` | Database name |
-| `POSTGRES_USER` | `whatisnews` | DB user |
-| `POSTGRES_PASSWORD` | `whatisnews123` | DB password |
+| `POSTGRES_DB` | `whatisnew` | Database name |
+| `POSTGRES_USER` | `whatisnew` | DB user |
+| `POSTGRES_PASSWORD` | `whatisnew123` | DB password |
 | `POSTGRES_PORT` | `5432` | DB port |
 | `BACKEND_PORT` | `8080` | API port |
 | `FRONTEND_PORT` | `3000` | Nginx port |
