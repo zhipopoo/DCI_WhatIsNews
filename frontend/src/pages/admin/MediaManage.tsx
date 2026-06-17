@@ -16,8 +16,8 @@ export default function MediaManage() {
   const [references, setReferences] = useState<{ id: number; title: string }[]>([]);
   const [refMediaId, setRefMediaId] = useState<number | null>(null);
   const [loadingRefs, setLoadingRefs] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadIdRef = useRef<string | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
   const fetchFiles = () => {
     listMediaFiles(page, 15).then((res) => {
@@ -31,44 +31,69 @@ export default function MediaManage() {
 
   useEffect(() => { fetchFiles(); }, [page]);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileList = e.target.files;
-    if (!fileList || fileList.length === 0) return;
+  // Dynamically create a file input to ensure multiple=true works on all platforms
+  const handleUploadClick = () => {
+    // Clean up previous input if any
+    if (uploadInputRef.current) {
+      uploadInputRef.current.remove();
+    }
 
-    setUploading(true);
-    setBatchInfo({ current: 0, total: fileList.length });
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = 'image/*,video/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip';
 
-    let hasError = false;
-    for (let i = 0; i < fileList.length; i++) {
-      const file = fileList[i];
-      setBatchInfo({ current: i + 1, total: fileList.length });
-      setUploadProgress(0);
-      setUploadFileName(file.name);
-
-      try {
-        await smartUploadFile(file, {
-          onProgress: (percent) => setUploadProgress(percent),
-          onUploadId: (id) => { uploadIdRef.current = id; },
-        });
-      } catch (err: any) {
-        alert(`Upload failed for "${file.name}": ` + (err?.message || 'Network error'));
-        hasError = true;
-        // Continue with next file instead of aborting all
+    input.onchange = async () => {
+      const fileList = input.files;
+      if (!fileList || fileList.length === 0) {
+        input.remove();
+        uploadInputRef.current = null;
+        return;
       }
-    }
 
-    // Refresh the list if at least one file succeeded
-    if (!hasError || fileList.length > 1) {
-      setPage(0);
-      fetchFiles();
-    }
+      setUploading(true);
+      setBatchInfo({ current: 0, total: fileList.length });
 
-    setUploading(false);
-    setUploadProgress(0);
-    setUploadFileName('');
-    setBatchInfo({ current: 0, total: 0 });
-    uploadIdRef.current = null;
-    if (fileInputRef.current) fileInputRef.current.value = '';
+      let hasError = false;
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        setBatchInfo({ current: i + 1, total: fileList.length });
+        setUploadProgress(0);
+        setUploadFileName(file.name);
+
+        try {
+          await smartUploadFile(file, {
+            onProgress: (percent) => setUploadProgress(percent),
+            onUploadId: (id) => { uploadIdRef.current = id; },
+          });
+        } catch (err: any) {
+          alert(`Upload failed for "${file.name}": ` + (err?.message || 'Network error'));
+          hasError = true;
+        }
+      }
+
+      if (!hasError || fileList.length > 1) {
+        setPage(0);
+        fetchFiles();
+      }
+
+      setUploading(false);
+      setUploadProgress(0);
+      setUploadFileName('');
+      setBatchInfo({ current: 0, total: 0 });
+      uploadIdRef.current = null;
+      input.remove();
+      uploadInputRef.current = null;
+    };
+
+    // Handle cancel (user closes file picker without selecting)
+    input.oncancel = () => {
+      input.remove();
+      uploadInputRef.current = null;
+    };
+
+    uploadInputRef.current = input;
+    input.click();
   };
 
   const handleCancelUpload = async () => {
@@ -80,7 +105,6 @@ export default function MediaManage() {
     setUploadProgress(0);
     setUploadFileName('');
     setBatchInfo({ current: 0, total: 0 });
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleDelete = async (id: number, name: string) => {
@@ -121,11 +145,15 @@ export default function MediaManage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Media Library</h1>
         <div className="flex items-center gap-3">
-          <label className={`bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors text-sm font-medium cursor-pointer ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+          <button
+            type="button"
+            onClick={handleUploadClick}
+            disabled={uploading}
+            className={`bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors text-sm font-medium ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+          >
             {uploading ? 'Uploading...' : '+ Upload'}
-            <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip" onChange={handleUpload} className="hidden" disabled={uploading} />
-          </label>
-          <span className="text-xs text-gray-400">Max 2GB per file. Supports chunked upload with progress & resume.</span>
+          </button>
+          <span className="text-xs text-gray-400">Max 2GB per file. Multi-file select supported.</span>
         </div>
       </div>
 

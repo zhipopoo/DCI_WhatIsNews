@@ -3,7 +3,14 @@
 -- ============================================================
 
 -- Enable trigram extension for text search
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
+-- On cloud RDS (Huawei Cloud, etc.), the extension may already be installed
+-- by the admin and the app user may lack permission to create extensions.
+DO $$
+BEGIN
+    CREATE EXTENSION IF NOT EXISTS pg_trgm;
+EXCEPTION WHEN insufficient_privilege THEN
+    RAISE NOTICE 'pg_trgm extension already managed by RDS admin, skipping';
+END $$;
 
 -- ============================================================
 -- 1. Category Table

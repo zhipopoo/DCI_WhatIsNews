@@ -41,3 +41,12 @@
 .rich-content a { @apply text-primary-600 underline; }
 .rich-content pre { @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-4; }
 .rich-content code { @apply bg-gray-100 px-1.5 py-0.5 rounded text-sm text-primary-700; }
+
+/* TipTap editor list and blockquote visibility */
+.ProseMirror ul { list-style: disc !important; padding-left: 1.5em !important; }
+.ProseMirror ol { list-style: decimal !important; padding-left: 1.5em !important; }
+.ProseMirror ul ul { list-style: circle !important; }
+.ProseMirror ul ul ul { list-style: square !important; }
+.ProseMirror li { margin-bottom: 0.25em; }
+.ProseMirror blockquote { border-left: 3px solid #C7000B; padding-left: 1em; margin: 0.75em 0; color: #666; background: #f9f9f9; padding: 0.5em 0.75em; border-radius: 0 4px 4px 0; }
+.ProseMirror blockquote p { margin: 0; }
