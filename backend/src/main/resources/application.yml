@@ -42,6 +42,10 @@ spring:
     time-zone: Asia/Shanghai
     default-property-inclusion: non_null
 
+# CORS Configuration — override CORS_ALLOWED_ORIGIN_PATTERNS env var to restrict origins
+cors:
+  allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:*}
+
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:WhatIsNew-JWT-Secret-Key-2024-Production}
