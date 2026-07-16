@@ -9,6 +9,8 @@ data:
   application.yml: |
     server:
       port: 8080
+      tomcat:
+        connection-timeout: 600000
 
     spring:
       application:
@@ -42,8 +44,8 @@ data:
 
       servlet:
         multipart:
-          max-file-size: 20MB
-          max-request-size: 20MB
+          max-file-size: 2048MB
+          max-request-size: 2048MB
 
       jackson:
         date-format: yyyy-MM-dd HH:mm:ss
@@ -56,6 +58,12 @@ data:
 
     file:
       upload-dir: ${FILE_UPLOAD_DIR:/app/uploads}
+      transcode:
+        enabled: true
+        crf: 23
+        preset: veryfast
+        ffmpeg-timeout-seconds: 600
+        ffprobe-timeout-seconds: 30
 
     admin:
       default-username: ${ADMIN_DEFAULT_USERNAME}

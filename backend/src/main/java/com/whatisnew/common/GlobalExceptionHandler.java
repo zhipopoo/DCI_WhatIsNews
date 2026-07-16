@@ -2,6 +2,7 @@ package com.whatisnew.common;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.stream.Collectors;
@@ -65,6 +67,28 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result<Void> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
         return Result.badRequest("File size exceeds the maximum limit (20MB)");
+    }
+
+    /**
+     * ClientAbortException (wrapping "Broken pipe" IOException) is thrown when
+     * the HTTP client disconnects before the server finishes writing the response.
+     * This is a routine network event (browser tab closed, user navigated away,
+     * connection timed out) — not an application bug. Log at DEBUG to keep
+     * production logs clean.
+     */
+    @ExceptionHandler(ClientAbortException.class)
+    public void handleClientAbort(ClientAbortException ex) {
+        log.debug("Client aborted connection: {}", ex.getMessage());
+    }
+
+    /**
+     * AsyncRequestNotUsableException is thrown when writing to a response whose
+     * underlying connection is already closed. Same class of event as
+     * ClientAbortException — the client went away.
+     */
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleAsyncRequestNotUsable(AsyncRequestNotUsableException ex) {
+        log.debug("Async request no longer usable: {}", ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

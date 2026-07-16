@@ -15,6 +15,8 @@ const MAX_CHUNK_RETRIES = 3;
 export interface ChunkedUploadCallbacks {
   onProgress?: (percent: number) => void;
   onUploadId?: (uploadId: string) => void;
+  /** Called when all chunks have been uploaded and the server starts merging/transcoding */
+  onProcessing?: () => void;
 }
 
 /**
@@ -107,7 +109,10 @@ export async function uploadChunkedFile(
     }
   }
 
-  // Complete upload — merge chunks on server
+  // All chunks uploaded — notify UI that server-side processing (merge + transcode) is starting
+  callbacks?.onProcessing?.();
+
+  // Complete upload — merge chunks on server (may include video transcode, which can take minutes)
   const res = await completeChunkedUpload(uploadId);
   return res.data;
 }

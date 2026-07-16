@@ -40,6 +40,9 @@ public class VideoTranscodeService {
     private final String ffmpegPath;
     private final String ffprobePath;
     private final int crf;
+    private final long ffmpegTimeoutSeconds;
+    private final long ffprobeTimeoutSeconds;
+    private final String preset;
 
     /** Codec names that indicate an H.264/AVC video stream — no transcode needed. */
     private static final Set<String> H264_CODEC_NAMES = Set.of("h264", "avc1", "avc");
@@ -50,7 +53,10 @@ public class VideoTranscodeService {
             @Value("${file.transcode.enabled:true}") boolean enabled,
             @Value("${file.transcode.ffmpeg-path:}") String ffmpegPath,
             @Value("${file.transcode.ffprobe-path:}") String ffprobePath,
-            @Value("${file.transcode.crf:23}") int crf) {
+            @Value("${file.transcode.crf:23}") int crf,
+            @Value("${file.transcode.ffmpeg-timeout-seconds:600}") long ffmpegTimeoutSeconds,
+            @Value("${file.transcode.ffprobe-timeout-seconds:30}") long ffprobeTimeoutSeconds,
+            @Value("${file.transcode.preset:veryfast}") String preset) {
         this.mediaFileRepository = mediaFileRepository;
         this.objectMapper = new ObjectMapper();
         this.uploadDir = uploadDir;
@@ -58,6 +64,9 @@ public class VideoTranscodeService {
         this.ffmpegPath = ffmpegPath;
         this.ffprobePath = ffprobePath;
         this.crf = crf;
+        this.ffmpegTimeoutSeconds = ffmpegTimeoutSeconds;
+        this.ffprobeTimeoutSeconds = ffprobeTimeoutSeconds;
+        this.preset = preset;
     }
 
     /**
@@ -173,7 +182,7 @@ public class VideoTranscodeService {
             command.add("-show_streams");
             command.add(filePath.toAbsolutePath().toString());
 
-            ProcessResult result = executeProcess(command, 30, TimeUnit.SECONDS);
+            ProcessResult result = executeProcess(command, ffprobeTimeoutSeconds, TimeUnit.SECONDS);
 
             if (result.exitCode() != 0) {
                 log.warn("ffprobe exited with code {} for {}: {}",
@@ -224,7 +233,7 @@ public class VideoTranscodeService {
         command.add("-crf");
         command.add(String.valueOf(crf));
         command.add("-preset");
-        command.add("medium");           // balanced speed vs compression
+        command.add(preset);             // configurable, defaults to "veryfast" for web CMS
         command.add("-c:a");
         command.add("aac");              // AAC audio (universal browser support)
         command.add("-b:a");
@@ -232,16 +241,11 @@ public class VideoTranscodeService {
         command.add("-movflags");
         command.add("+faststart");       // moov atom at start for streaming
 
-        // Limit to single thread to avoid CPU starvation when multiple uploads
-        // happen concurrently. Remove or adjust if the server has dedicated capacity.
-        command.add("-threads");
-        command.add("1");
-
         command.add(outputPath.toAbsolutePath().toString());
 
         log.debug("Running ffmpeg: {}", String.join(" ", command));
 
-        ProcessResult result = executeProcess(command, 300, TimeUnit.SECONDS);
+        ProcessResult result = executeProcess(command, ffmpegTimeoutSeconds, TimeUnit.SECONDS);
 
         if (result.exitCode() != 0) {
             // Delete partial output

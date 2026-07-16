@@ -1,5 +1,7 @@
 server:
   port: 8080
+  tomcat:
+    connection-timeout: 600000
 
 spring:
   application:
@@ -59,6 +61,9 @@ file:
     ffmpeg-path: ${FILE_TRANSCODE_FFMPEG_PATH:}
     ffprobe-path: ${FILE_TRANSCODE_FFPROBE_PATH:}
     crf: ${FILE_TRANSCODE_CRF:23}
+    ffmpeg-timeout-seconds: ${FILE_TRANSCODE_FFMPEG_TIMEOUT:600}
+    ffprobe-timeout-seconds: ${FILE_TRANSCODE_FFPROBE_TIMEOUT:30}
+    preset: ${FILE_TRANSCODE_PRESET:veryfast}
 
 # Default Admin Account
 admin:

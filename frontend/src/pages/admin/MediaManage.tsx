@@ -13,6 +13,7 @@ export default function MediaManage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadFileName, setUploadFileName] = useState('');
   const [batchInfo, setBatchInfo] = useState({ current: 0, total: 0 });
+  const [processing, setProcessing] = useState(false);
   const [references, setReferences] = useState<{ id: number; title: string }[]>([]);
   const [refMediaId, setRefMediaId] = useState<number | null>(null);
   const [loadingRefs, setLoadingRefs] = useState(false);
@@ -60,11 +61,13 @@ export default function MediaManage() {
         setBatchInfo({ current: i + 1, total: fileList.length });
         setUploadProgress(0);
         setUploadFileName(file.name);
+        setProcessing(false);
 
         try {
           await smartUploadFile(file, {
             onProgress: (percent) => setUploadProgress(percent),
             onUploadId: (id) => { uploadIdRef.current = id; },
+            onProcessing: () => setProcessing(true),
           });
         } catch (err: any) {
           alert(`Upload failed for "${file.name}": ` + (err?.message || 'Network error'));
@@ -81,6 +84,7 @@ export default function MediaManage() {
       setUploadProgress(0);
       setUploadFileName('');
       setBatchInfo({ current: 0, total: 0 });
+      setProcessing(false);
       uploadIdRef.current = null;
       input.remove();
       uploadInputRef.current = null;
@@ -157,7 +161,7 @@ export default function MediaManage() {
         </div>
       </div>
 
-      {/* Upload progress bar */}
+      {/* Upload / processing progress bar */}
       {uploading && (
         <div className="mb-4 bg-white rounded-lg border border-gray-100 p-3">
           <div className="flex items-center justify-between mb-1.5">
@@ -168,20 +172,34 @@ export default function MediaManage() {
                 <>Uploading <span className="font-medium">{uploadFileName}</span></>
               )}
             </span>
-            <span className="text-sm font-medium text-primary-600">{uploadProgress}%</span>
+            {processing ? (
+              <span className="text-sm font-medium text-amber-600 animate-pulse">Processing...</span>
+            ) : (
+              <span className="text-sm font-medium text-primary-600">{uploadProgress}%</span>
+            )}
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-primary-600 h-full rounded-full transition-all duration-300"
-              style={{ width: `${uploadProgress}%` }}
-            />
+            {processing ? (
+              <div className="bg-amber-500 h-full rounded-full animate-pulse" style={{ width: '100%' }} />
+            ) : (
+              <div
+                className="bg-primary-600 h-full rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            )}
           </div>
-          <button
-            onClick={handleCancelUpload}
-            className="mt-2 text-xs text-red-500 hover:text-red-600 font-medium"
-          >
-            Cancel current upload
-          </button>
+          {processing ? (
+            <p className="mt-2 text-xs text-amber-600">
+              Server is processing the file — merging chunks{uploadFileName.match(/\.(mp4|mov|avi|mkv|webm|wmv|flv)$/i) ? ', transcoding video to H.264...' : '...'}
+            </p>
+          ) : (
+            <button
+              onClick={handleCancelUpload}
+              className="mt-2 text-xs text-red-500 hover:text-red-600 font-medium"
+            >
+              Cancel current upload
+            </button>
+          )}
         </div>
       )}
 

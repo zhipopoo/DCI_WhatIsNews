@@ -57,6 +57,7 @@ export default function NewsEdit() {
   const [editorUploading, setEditorUploading] = useState(false);
   const [editorUploadProgress, setEditorUploadProgress] = useState(0);
   const [editorUploadFileName, setEditorUploadFileName] = useState('');
+  const [editorProcessing, setEditorProcessing] = useState(false);
   const [initialContent, setInitialContent] = useState('');
 
   const [form, setForm] = useState<NewsFormData>({
@@ -130,9 +131,9 @@ export default function NewsEdit() {
   };
 
   // Generic file upload helper (returns URL on success)
-  const uploadAndGetUrl = async (file: File, onProgress?: (p: number) => void): Promise<string | null> => {
+  const uploadAndGetUrl = async (file: File, onProgress?: (p: number) => void, onProcessing?: () => void): Promise<string | null> => {
     try {
-      const mediaFile = await smartUploadFile(file, { onProgress });
+      const mediaFile = await smartUploadFile(file, { onProgress, onProcessing });
       return mediaFile.filePath;
     } catch (e: any) {
       alert('Upload failed: ' + (e?.message || 'Network error'));
@@ -151,11 +152,13 @@ export default function NewsEdit() {
       setEditorUploading(true);
       setEditorUploadProgress(0);
       setEditorUploadFileName(file.name);
-      const url = await uploadAndGetUrl(file, (p) => setEditorUploadProgress(p));
+      setEditorProcessing(false);
+      const url = await uploadAndGetUrl(file, (p) => setEditorUploadProgress(p), () => setEditorProcessing(true));
       if (url) onDone(url, file);
       setEditorUploading(false);
       setEditorUploadProgress(0);
       setEditorUploadFileName('');
+      setEditorProcessing(false);
       input.remove();
     };
     // Handle cancel (no file selected)
@@ -327,19 +330,32 @@ export default function NewsEdit() {
 
           {/* Editor upload progress */}
           {editorUploading && (
-            <div className="bg-primary-50 rounded-lg border border-primary-100 p-3">
+            <div className={`rounded-lg border p-3 ${editorProcessing ? 'bg-amber-50 border-amber-200' : 'bg-primary-50 border-primary-100'}`}>
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-sm text-gray-700 truncate flex-1 mr-4">
-                  Uploading <span className="font-medium">{editorUploadFileName}</span>
+                  {editorProcessing ? 'Processing' : 'Uploading'} <span className="font-medium">{editorUploadFileName}</span>
                 </span>
-                <span className="text-sm font-medium text-primary-600">{editorUploadProgress}%</span>
+                {editorProcessing ? (
+                  <span className="text-sm font-medium text-amber-600 animate-pulse">Please wait...</span>
+                ) : (
+                  <span className="text-sm font-medium text-primary-600">{editorUploadProgress}%</span>
+                )}
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-primary-600 h-full rounded-full transition-all duration-300"
-                  style={{ width: `${editorUploadProgress}%` }}
-                />
+                {editorProcessing ? (
+                  <div className="bg-amber-500 h-full rounded-full animate-pulse" style={{ width: '100%' }} />
+                ) : (
+                  <div
+                    className="bg-primary-600 h-full rounded-full transition-all duration-300"
+                    style={{ width: `${editorUploadProgress}%` }}
+                  />
+                )}
               </div>
+              {editorProcessing && (
+                <p className="mt-2 text-xs text-amber-600">
+                  Server is processing — merging chunks, may include video transcoding...
+                </p>
+              )}
             </div>
           )}
 
