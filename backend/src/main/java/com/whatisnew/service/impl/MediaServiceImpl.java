@@ -5,6 +5,7 @@ import com.whatisnew.entity.MediaFile;
 import com.whatisnew.repository.MediaFileRepository;
 import com.whatisnew.repository.NewsRepository;
 import com.whatisnew.service.MediaService;
+import com.whatisnew.service.VideoTranscodeService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class MediaServiceImpl implements MediaService {
 
     private final MediaFileRepository mediaFileRepository;
     private final NewsRepository newsRepository;
+    private final VideoTranscodeService videoTranscodeService;
 
     @Value("${file.upload-dir:./uploads}")
     private String uploadDir;
@@ -84,7 +86,13 @@ public class MediaServiceImpl implements MediaService {
                     .build();
 
             mediaFile = mediaFileRepository.save(mediaFile);
-            log.info("Uploaded file: {} -> {}", originalName, storedName);
+
+            // Best-effort video transcode: probe codec, transcode to H.264 if needed
+            if ("VIDEO".equals(mediaFile.getFileType())) {
+                mediaFile = videoTranscodeService.processIfNeeded(mediaFile);
+            }
+
+            log.info("Uploaded file: {} -> {}", originalName, mediaFile.getStoredName());
             return mediaFile;
 
         } catch (IOException e) {

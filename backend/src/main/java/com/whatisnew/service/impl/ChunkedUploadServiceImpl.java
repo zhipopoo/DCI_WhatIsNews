@@ -6,6 +6,7 @@ import com.whatisnew.dto.ChunkedUploadStatus;
 import com.whatisnew.entity.MediaFile;
 import com.whatisnew.repository.MediaFileRepository;
 import com.whatisnew.service.ChunkedUploadService;
+import com.whatisnew.service.VideoTranscodeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,6 +37,7 @@ import java.util.stream.Stream;
 public class ChunkedUploadServiceImpl implements ChunkedUploadService {
 
     private final MediaFileRepository mediaFileRepository;
+    private final VideoTranscodeService videoTranscodeService;
     private final String uploadDir;
     private final ObjectMapper objectMapper;
 
@@ -48,8 +50,10 @@ public class ChunkedUploadServiceImpl implements ChunkedUploadService {
     );
 
     public ChunkedUploadServiceImpl(MediaFileRepository mediaFileRepository,
+                                    VideoTranscodeService videoTranscodeService,
                                     @Value("${file.upload-dir:./uploads}") String uploadDir) {
         this.mediaFileRepository = mediaFileRepository;
+        this.videoTranscodeService = videoTranscodeService;
         this.uploadDir = uploadDir;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
@@ -178,6 +182,11 @@ public class ChunkedUploadServiceImpl implements ChunkedUploadService {
                     .build();
             mediaFile = mediaFileRepository.save(mediaFile);
 
+            // Best-effort video transcode: probe codec, transcode to H.264 if needed
+            if ("VIDEO".equals(mediaFile.getFileType())) {
+                mediaFile = videoTranscodeService.processIfNeeded(mediaFile);
+            }
+
             // Mark session as completed
             meta.status = "COMPLETED";
             objectMapper.writeValue(getSessionFile(uploadId).toFile(), meta);
@@ -185,7 +194,7 @@ public class ChunkedUploadServiceImpl implements ChunkedUploadService {
             // Clean up chunk temp directory
             deleteSessionDir(uploadId);
 
-            log.info("Chunked upload completed: uploadId={}, fileName={}, storedName={}", uploadId, meta.fileName, storedName);
+            log.info("Chunked upload completed: uploadId={}, fileName={}, storedName={}", uploadId, meta.fileName, mediaFile.getStoredName());
             return mediaFile;
         } catch (IOException e) {
             log.error("Failed to complete upload {}", uploadId, e);

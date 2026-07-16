@@ -54,6 +54,11 @@ jwt:
 # File Upload Configuration
 file:
   upload-dir: ${FILE_UPLOAD_DIR:./uploads}
+  transcode:
+    enabled: ${FILE_TRANSCODE_ENABLED:true}
+    ffmpeg-path: ${FILE_TRANSCODE_FFMPEG_PATH:}
+    ffprobe-path: ${FILE_TRANSCODE_FFPROBE_PATH:}
+    crf: ${FILE_TRANSCODE_CRF:23}
 
 # Default Admin Account
 admin:

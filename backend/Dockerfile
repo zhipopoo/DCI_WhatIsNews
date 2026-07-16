@@ -14,6 +14,9 @@ RUN mvn package -DskipTests -B
 # ==================== Runtime Stage ====================
 FROM eclipse-temurin:21-jre-alpine
 
+# Install ffmpeg for video transcoding
+RUN apk add --no-cache ffmpeg
+
 WORKDIR /app
 
 # Copy the built JAR from build stage
