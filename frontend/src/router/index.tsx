@@ -5,6 +5,7 @@ import Home from '@/pages/frontend/Home';
 import NewsList from '@/pages/frontend/NewsList';
 import NewsDetail from '@/pages/frontend/NewsDetail';
 import CategoryPage from '@/pages/frontend/CategoryPage';
+import Guidelines from '@/pages/frontend/Guidelines';
 import AdminLogin from '@/pages/admin/Login';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import AdminNewsManage from '@/pages/admin/NewsManage';
@@ -12,6 +13,8 @@ import AdminNewsEdit from '@/pages/admin/NewsEdit';
 import AdminCategoryManage from '@/pages/admin/CategoryManage';
 import AdminMediaManage from '@/pages/admin/MediaManage';
 import AdminUserManage from '@/pages/admin/UserManage';
+import AdminUsefulLinkManage from '@/pages/admin/UsefulLinkManage';
+import AdminThemeSettings from '@/pages/admin/ThemeSettings';
 
 const router = createBrowserRouter([
   // Frontend routes
@@ -23,6 +26,7 @@ const router = createBrowserRouter([
       { path: 'news', element: <NewsList /> },
       { path: 'news/:id', element: <NewsDetail /> },
       { path: 'category/:slug', element: <CategoryPage /> },
+      { path: 'guidelines', element: <Guidelines /> },
     ],
   },
   // Admin routes
@@ -41,6 +45,8 @@ const router = createBrowserRouter([
       { path: 'categories', element: <AdminCategoryManage /> },
       { path: 'media', element: <AdminMediaManage /> },
       { path: 'users', element: <AdminUserManage /> },
+      { path: 'useful-links', element: <AdminUsefulLinkManage /> },
+      { path: 'settings', element: <AdminThemeSettings /> },
     ],
   },
   // Catch-all

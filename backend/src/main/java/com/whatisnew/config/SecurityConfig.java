@@ -40,7 +40,9 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/api/news/**",
-                    "/api/categories/**"
+                    "/api/categories/**",
+                    "/api/useful-links",
+                    "/api/settings"
                 ).permitAll()
                 // Auth endpoint
                 .requestMatchers("/api/auth/**").permitAll()

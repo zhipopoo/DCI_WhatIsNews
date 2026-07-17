@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { getAllCategories } from '@/api/category';
+import { useThemeStore } from '@/store/themeStore';
 import type { Category } from '@/types';
 
 export default function Layout() {
@@ -8,6 +9,7 @@ export default function Layout() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const logoUrl = useThemeStore((s) => s.logoUrl);
 
   useEffect(() => {
     getAllCategories()
@@ -38,19 +40,25 @@ export default function Layout() {
         <div className="max-w-news mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="w-9 h-9 bg-primary-600 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-sm">DCI</span>
-            </div>
-            <div>
-              <span className="text-lg font-bold text-gray-900 tracking-tight">WhatIs</span>
-              <span className="text-lg font-bold text-primary-600 tracking-tight">New</span>
-            </div>
+            {logoUrl ? (
+              <img src={logoUrl} alt="WhatIsNew" className="h-9 w-auto" />
+            ) : (
+              <>
+                <div className="w-9 h-9 bg-primary-600 rounded flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">DCI</span>
+                </div>
+                <div>
+                  <span className="text-lg font-bold text-gray-900 tracking-tight">WhatIs</span>
+                  <span className="text-lg font-bold text-primary-600 tracking-tight">New</span>
+                </div>
+              </>
+            )}
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link to="/news" className="px-4 py-2 text-sm text-gray-700 hover:text-primary-600 transition-colors rounded">News</Link>
-            {categories.filter(cat => cat.slug !== 'news').slice(0, 4).map((cat) => (
+            <Link to="/news" className="px-4 py-2 text-sm text-gray-700 hover:text-primary-600 transition-colors rounded">Overview</Link>
+            {categories.slice(0, 5).map((cat) => (
               <Link
                 key={cat.id}
                 to={`/category/${cat.slug}`}
@@ -59,6 +67,7 @@ export default function Layout() {
                 {cat.name}
               </Link>
             ))}
+            <Link to="/guidelines" className="px-4 py-2 text-sm text-gray-700 hover:text-primary-600 transition-colors rounded">DCI Guidelines</Link>
           </nav>
 
           {/* Search + Mobile toggle */}
@@ -96,12 +105,13 @@ export default function Layout() {
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-t px-4 py-3 space-y-1">
-            <Link to="/news" className="block py-2.5 px-3 text-sm text-gray-700 rounded hover:bg-gray-50" onClick={() => setMobileMenuOpen(false)}>News</Link>
+            <Link to="/news" className="block py-2.5 px-3 text-sm text-gray-700 rounded hover:bg-gray-50" onClick={() => setMobileMenuOpen(false)}>Overview</Link>
             {categories.map((cat) => (
               <Link key={cat.id} to={`/category/${cat.slug}`} className="block py-2.5 px-3 text-sm text-gray-700 rounded hover:bg-gray-50" onClick={() => setMobileMenuOpen(false)}>
                 {cat.name}
               </Link>
             ))}
+            <Link to="/guidelines" className="block py-2.5 px-3 text-sm text-gray-700 rounded hover:bg-gray-50" onClick={() => setMobileMenuOpen(false)}>DCI Guidelines</Link>
             <form onSubmit={handleSearch} className="flex pt-2">
               <input
                 type="text"
@@ -126,16 +136,23 @@ export default function Layout() {
         <div className="max-w-news mx-auto px-4 py-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-primary-600 rounded flex items-center justify-center">
-                <span className="text-white font-bold text-[10px]">DCI</span>
-              </div>
-              <span className="text-white font-bold text-sm tracking-tight">WhatIsNew</span>
+              {logoUrl ? (
+                <img src={logoUrl} alt="WhatIsNew" className="h-7 w-auto" />
+              ) : (
+                <>
+                  <div className="w-7 h-7 bg-primary-600 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-[10px]">DCI</span>
+                  </div>
+                  <span className="text-white font-bold text-sm tracking-tight">WhatIsNew</span>
+                </>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs">
+              <Link to="/news" className="hover:text-white transition-colors">Overview</Link>
               {categories.map((cat) => (
                 <Link key={cat.id} to={`/category/${cat.slug}`} className="hover:text-white transition-colors">{cat.name}</Link>
               ))}
-              <Link to="/news" className="hover:text-white transition-colors">All News</Link>
+              <Link to="/guidelines" className="hover:text-white transition-colors">DCI Guidelines</Link>
             </div>
             <span className="text-xs text-gray-500">&copy; {new Date().getFullYear()} WhatIsNew</span>
           </div>

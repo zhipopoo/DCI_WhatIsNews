@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Default primary color palette as CSS custom properties */
+/* These are overridden at runtime by themeStore when custom settings are loaded */
+:root {
+  --tw-clr-primary-50:  254 242 242;
+  --tw-clr-primary-100: 253 227 227;
+  --tw-clr-primary-200: 251 199 199;
+  --tw-clr-primary-300: 248 160 160;
+  --tw-clr-primary-400: 245 101 101;
+  --tw-clr-primary-500: 229 62 62;
+  --tw-clr-primary-600: 199 0 11;
+  --tw-clr-primary-700: 158 0 6;
+  --tw-clr-primary-800: 139 0 5;
+  --tw-clr-primary-900: 122 0 4;
+  --tw-clr-primary-950: 92 0 3;
+  --primary-color: #C7000B;
+}
+
 @layer base {
   body {
     @apply min-h-screen;
@@ -48,5 +65,5 @@
 .ProseMirror ul ul { list-style: circle !important; }
 .ProseMirror ul ul ul { list-style: square !important; }
 .ProseMirror li { margin-bottom: 0.25em; }
-.ProseMirror blockquote { border-left: 3px solid #C7000B; padding-left: 1em; margin: 0.75em 0; color: #666; background: #f9f9f9; padding: 0.5em 0.75em; border-radius: 0 4px 4px 0; }
+.ProseMirror blockquote { border-left: 3px solid var(--primary-color, #C7000B); padding-left: 1em; margin: 0.75em 0; color: #666; background: #f9f9f9; padding: 0.5em 0.75em; border-radius: 0 4px 4px 0; }
 .ProseMirror blockquote p { margin: 0; }

@@ -153,3 +153,34 @@ export interface ChunkedUploadStatus {
   uploadedChunks: number[];
   createdAt: string;
 }
+
+// ==================== Useful Link ====================
+
+export interface UsefulLink {
+  id: number;
+  title: string;
+  description?: string;
+  mediaFileId?: number;
+  filePath?: string;
+  fileName?: string;
+  fileSize?: number;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UsefulLinkFormData {
+  title: string;
+  description?: string;
+  mediaFileId?: number;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+// ==================== Site Settings ====================
+
+export interface SiteSettings {
+  logoUrl?: string;
+  primaryColor: string;
+}

@@ -33,10 +33,16 @@ export default function HeroCarousel({ items }: Props) {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900 to-primary-900/80" />
+      {/* Cover image background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-all duration-700"
+        style={{ backgroundImage: item.coverImage ? `url(${item.coverImage})` : undefined }}
+      />
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-gray-900/60" />
+      {/* Radial accent glow */}
       <div className="absolute inset-0 opacity-20" style={{
-        backgroundImage: 'radial-gradient(circle at 80% 50%, #C7000B 0%, transparent 60%)'
+        backgroundImage: 'radial-gradient(circle at 80% 50%, var(--primary-color, #C7000B) 0%, transparent 60%)'
       }} />
 
       <div className="relative max-w-news mx-auto px-4 py-16 md:py-24">
