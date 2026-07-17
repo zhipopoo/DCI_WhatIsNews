@@ -92,26 +92,6 @@ export default function Home() {
 
           {/* Sidebar */}
           <aside className="space-y-6">
-            {/* Categories */}
-            <div className="bg-white rounded-lg border border-gray-100 p-5">
-              <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wider">Categories</h3>
-              <ul className="space-y-0.5">
-                {categories.map((cat) => (
-                  <li key={cat.id}>
-                    <Link
-                      to={`/category/${cat.slug}`}
-                      className="flex items-center justify-between py-2.5 px-3 rounded hover:bg-gray-50 transition-colors group"
-                    >
-                      <span className="text-sm text-gray-700 group-hover:text-primary-600 transition-colors">{cat.name}</span>
-                      <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
-                        {cat.newsCount ?? 0}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
             {/* Useful Links */}
             {usefulLinks.length > 0 && (
               <div className="bg-white rounded-lg border border-gray-100 p-5">
@@ -139,6 +119,26 @@ export default function Home() {
                 </ul>
               </div>
             )}
+
+            {/* Categories */}
+            <div className="bg-white rounded-lg border border-gray-100 p-5">
+              <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wider">Categories</h3>
+              <ul className="space-y-0.5">
+                {categories.map((cat) => (
+                  <li key={cat.id}>
+                    <Link
+                      to={`/category/${cat.slug}`}
+                      className="flex items-center justify-between py-2.5 px-3 rounded hover:bg-gray-50 transition-colors group"
+                    >
+                      <span className="text-sm text-gray-700 group-hover:text-primary-600 transition-colors">{cat.name}</span>
+                      <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                        {cat.newsCount ?? 0}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             {/* Editor's Picks Sidebar */}
             {secondaryTop.length > 0 && (

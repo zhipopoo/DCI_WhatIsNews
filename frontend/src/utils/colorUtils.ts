@@ -116,3 +116,23 @@ export function applyColorPalette(element: HTMLElement, hex: string): void {
   }
   element.style.setProperty('--primary-color', hex);
 }
+
+/**
+ * Update the browser favicon to match the theme color.
+ * Generates a tiny SVG favicon with the primary color as a rounded square.
+ */
+export function updateFavicon(hex: string): void {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="6" fill="${hex}"/>
+    <text x="16" y="23" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="white">DCI</text>
+  </svg>`;
+  const dataUrl = 'data:image/svg+xml,' + encodeURIComponent(svg);
+
+  let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.head.appendChild(link);
+  }
+  link.href = dataUrl;
+}

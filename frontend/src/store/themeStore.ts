@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { getSettings } from '@/api/settings';
-import { applyColorPalette } from '@/utils/colorUtils';
+import { applyColorPalette, updateFavicon } from '@/utils/colorUtils';
 import type { SiteSettings } from '@/types';
 
 const STORAGE_KEY = 'theme-settings';
@@ -45,6 +45,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
     // Apply color palette as CSS custom properties
     if (settings.primaryColor) {
       applyColorPalette(document.documentElement, settings.primaryColor);
+      updateFavicon(settings.primaryColor);
     }
     // Persist to localStorage for instant restore on next page load
     persistSettings({
