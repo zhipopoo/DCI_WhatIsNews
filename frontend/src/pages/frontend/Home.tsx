@@ -5,6 +5,7 @@ import { getAllCategories } from '@/api/category';
 import { getActiveUsefulLinks } from '@/api/usefulLink';
 import type { NewsItem, Category, UsefulLink } from '@/types';
 import HeroCarousel from '@/components/HeroCarousel';
+import FileIcon from '@/components/FileIcon';
 
 export default function Home() {
   const [topNews, setTopNews] = useState<NewsItem[]>([]);
@@ -92,10 +93,10 @@ export default function Home() {
 
           {/* Sidebar */}
           <aside className="space-y-6">
-            {/* Useful Links */}
+            {/* DCI Guidelines */}
             {usefulLinks.length > 0 && (
               <div className="bg-white rounded-lg border border-gray-100 p-5">
-                <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wider">Useful Links</h3>
+                <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wider">DCI Guidelines</h3>
                 <ul className="space-y-1">
                   {usefulLinks.map((link) => (
                     <li key={link.id}>
@@ -104,7 +105,7 @@ export default function Home() {
                         download={link.fileName}
                         className="flex items-center gap-3 py-2.5 px-3 rounded hover:bg-gray-50 transition-colors group"
                       >
-                        <span className="text-lg">📎</span>
+                        <FileIcon fileName={link.fileName} size={20} />
                         <div className="flex-1 min-w-0">
                           <span className="text-sm text-gray-700 group-hover:text-primary-600 transition-colors block truncate">
                             {link.title}

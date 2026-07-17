@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getActiveUsefulLinks } from '@/api/usefulLink';
 import type { UsefulLink } from '@/types';
+import FileIcon from '@/components/FileIcon';
 
 export default function Guidelines() {
   const [links, setLinks] = useState<UsefulLink[]>([]);
@@ -50,7 +51,7 @@ export default function Guidelines() {
               className="bg-white rounded-lg border border-gray-100 p-5 hover:shadow-md hover:border-primary-200 transition-all group"
             >
               <div className="flex items-start gap-3">
-                <span className="text-3xl shrink-0">📎</span>
+                <FileIcon fileName={link.fileName} size={32} />
                 <div className="min-w-0">
                   <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors text-sm leading-snug">
                     {link.title}
